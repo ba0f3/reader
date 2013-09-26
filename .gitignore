@@ -1,0 +1,5 @@
+.idea
+RSS.iml
+migrations
+
+**/*.pyc

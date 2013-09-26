@@ -1,0 +1,10 @@
+flask
+flask-themes
+flask-lesscss
+flask-restless
+flask-migrate
+flask-babel
+flask-mail
+flask-login
+flask-principal
+feedparser

@@ -1,12 +1,12 @@
 from flask import *
 from ssr import app
-from flask.ext.login import login_required, login_user, logout_user
+from flask.ext.login import login_required, login_user, logout_user, current_user
 from ssr.models import User
 
 @app.route('/')
 @login_required
 def index():
-    return 'Hello World!'
+    return render_template('index.html', categories=current_user.categories)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

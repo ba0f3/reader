@@ -34,7 +34,8 @@ from ssr.commands import *
 
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
-manager.add_command('demo', InsertDemoDataCommand())
+manager.add_command('update', UpdateCommand)
+manager.add_command('demo', DemoCommand)
 manager.add_command('test', TestRssClient())
 
 

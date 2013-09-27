@@ -6,7 +6,8 @@ from ssr.models import User
 @app.route('/')
 @login_required
 def index():
-    return render_template('index.html', categories=current_user.categories)
+    template = 'index-debug.html' if app.debug is True else 'index.html'
+    return render_template(template, categories=current_user.categories)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

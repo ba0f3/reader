@@ -1,5 +1,5 @@
 .idea
 RSS.iml
 migrations
-
+ssr/static/Build
 **/*.pyc

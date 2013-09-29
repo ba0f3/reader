@@ -1,5 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+<!--
+ index-debug.html
+ a
+
+ Created by You on September 29, 2013.
+ Copyright 2013, Your Company All rights reserved.
+-->
     <head>
         <meta charset="utf-8">
 
@@ -9,22 +16,23 @@
         <!--[if gte IE 9]>
         <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
         <![endif]-->
-        <link href='http://fonts.googleapis.com/css?family=Roboto:300,300italic,400italic,500italic,500,400,700,700italic&amp;subset=latin,vietnamese,latin-ext,cyrillic,greek,greek-ext,cyrillic-ext' rel='stylesheet' type='text/css'>
+
         <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
 
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
-        <link rel="apple-touch-icon" href="{{ url_for('static', filename='Resources/icon.png') }}">
-        <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='Resources/default.png') }}">
+        <link rel="apple-touch-icon" href="Resources/icon.png">
+        <link rel="apple-touch-startup-image" href="Resources/default.png">
 
-        <title>SSR</title>
+        <title>a</title>
 
         <!-- Custom javascript goes here -->
         <!-- End custom javascript -->
 
         <script type="text/javascript">
-            OBJJ_MAIN_FILE = "{{ url_for('static', filename='main.j') }}";
+            OBJJ_MAIN_FILE = "main.j";
+            OBJJ_INCLUDE_PATHS = ["Frameworks/Debug", "Frameworks"];
 
             var progressBar = null;
 
@@ -48,7 +56,36 @@
                     '</div>';
         </script>
 
-        <script type="text/javascript" src="{{ url_for('static', filename='Frameworks/Objective-J/Objective-J.js') }}" charset="UTF-8"></script>
+        <script type="text/javascript" src="Frameworks/Debug/Objective-J/Objective-J.js" charset="UTF-8"></script>
+
+        <script type="text/javascript">
+            objj_msgSend_reset();
+
+            // DEBUG OPTIONS:
+
+            // Uncomment to enable printing of backtraces on exceptions:
+            //objj_msgSend_decorate(objj_backtrace_decorator);
+
+            // Uncomment to supress exceptions that take place inside a message
+            //objj_msgSend_decorate(objj_supress_exceptions_decorator)
+
+            // Uncomment to enable runtime type checking:
+            //objj_msgSend_decorate(objj_typecheck_decorator);
+
+            // Uncomment (along with both above) to print backtraces on type check errors:
+            //objj_typecheck_prints_backtrace = true;
+
+            // Uncomment to disable the default logger (CPLogConsole if window.console exists, CPLogPopup otherwise):
+            //CPLogUnregister(CPLogDefault);
+
+            // Uncomment to enable a specific logger:
+            //CPLogRegister(CPLogConsole);
+            //CPLogRegister(CPLogPopup);
+
+            // Tag view DOM elements with a "data-cappuccino-view" attribute that contains
+            // the class name of the view that created them. Comment this or set to false to disable.
+            appkit_tag_dom_elements = true;
+        </script>
 
         <style type="text/css">
             html, body, h1, p {

@@ -1,4 +1,5 @@
 @import <AppKit/CPView.j>
+@import "Widgets/FolderItemView.j"
 
 @implementation NavigationView : CPView
 {
@@ -7,10 +8,12 @@
 
 - (void)initWithFrame:(CGRect)aFrame
 {
-	items = [CPDictionary dictionaryWithObjects:[[@"Unread", @"Favorites", @"Archives", @"Software", @"Developement"], [@"Android", @"Ubuntu", @"Linux"], [@"Read Later", @"RSS News"]] forKeys:[@"Feeds", @"Labels", @"Smart Folders"]];
+	items = [CPDictionary dictionaryWithObjects:[[], [], [@"Unread", @"Favorites", @"Archives"], [@"Android", @"Ubuntu", @"Linux"], [@"Read Later", @"RSS News"]] forKeys:[@"Software", @"Developement", @"Feeds", @"Labels", @"Smart Folders"]];
 	self = [super initWithFrame:aFrame];
     if (self)
     {
+    	//self._DOMElement.style.boxShadow="5px 5px 1px #888888";
+    	self._DOMElement.style.borderRight="1px solid rgb(184, 178, 178)";
     	[self setAutoresizingMask:CPViewHeightSizable | CPViewMaxXMargin];
 
 		var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, CGRectGetHeight([self bounds]) - 26.0)];
@@ -21,20 +24,26 @@
 	    [scrollView setAutoresizingMask:CPViewHeightSizable];
 
 	    var outlineView = [[CPOutlineView alloc] initWithFrame:[scrollView bounds]];
-	    var textColumn = [[CPTableColumn alloc] initWithIdentifier:@"TextColumn"];
+	    var tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"tableColumn"];
+	    [tableColumn setWidth:200.0];
 
-	    [textColumn setWidth:200.0];
+	    //TODO custom dataView for Folder
+	    //var dataView  = [[FolderItemView alloc] initWithFrame:CGRectMake(0, 0, 200, 25)];
+	    //[tableColumn setDataView:dataView];
 
 	    [outlineView setHeaderView:nil];
 	    [outlineView setCornerView:nil];
-	    [outlineView addTableColumn:textColumn];
-	    [outlineView setOutlineTableColumn:textColumn];
+	    [outlineView addTableColumn:tableColumn];
+	    [outlineView setOutlineTableColumn:tableColumn];
+	    [outlineView setBackgroundColor:[CPColor colorWithHexString:@"E0E0E0"]];
+
 	    //[outlineView setAutoresizingMask:CPViewHeightSizable];
 
 	    [scrollView setDocumentView:outlineView];
 
 	    [self addSubview:scrollView];
 
+		[outlineView setDelegate:self];
 	    [outlineView setDataSource:self];
 
 	    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight([self bounds]) - 26.0, CGRectGetWidth([self bounds]), 26.0)]; //you need to use your own frame obviously
@@ -92,13 +101,11 @@
     if (item === nil)
     {
         var keys = [items allKeys];
-        console.log([keys objectAtIndex:index]);
         return [keys objectAtIndex:index];
     }
     else
     {
         var values = [items objectForKey:item];
-        console.log([values objectAtIndex:index]);
         return [values objectAtIndex:index];
     }
 }
@@ -108,7 +115,6 @@
     CPLog("outlineView:%@ isItemExpandable:%@", outlineView, item);
 
     var values = [items objectForKey:item];
-    console.log(([values count] > 0));
     return ([values count] > 0);
 }
 
@@ -118,13 +124,11 @@
 
     if (item === nil)
     {
-        console.log([items count]);
         return [items count];
     }
     else
     {
         var values = [items objectForKey:item];
-        console.log([values count]);
         return [values count];
     }
 }
@@ -132,10 +136,26 @@
 - (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item
 {
     CPLog("outlineView:%@ objectValueForTableColumn:%@ byItem:%@", outlineView, tableColumn, item);
-
-    console.log(item);
-
     return item;
 }
 
+- (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item
+{
+	CPLog("outlineView:%@ shouldExpandItem:%@", outlineView, item);
+	return YES;
+}
+
+- (void)outlineView:(CPOutlineView)outlineView willDisplayView:(id)dataView forTableColumn:(CPTableColumn)tableColumn item:(id)item
+{
+	CPLog("outlineView:%@ willDisplayView:%@ forTableColumn:%@ item:%@", outlineView, dataView, tableColumn, item);
+
+	if([dataView hasThemeState:CPThemeStateGroupRow])
+	{
+		CPLog('CPThemeStateGroupRow');
+	}
+	else
+	{
+		CPLog('CPThemeStateTableDataView');
+	}
+}
 @end

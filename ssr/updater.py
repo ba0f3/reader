@@ -52,7 +52,11 @@ class Updater:
             db.session.add(feed)
             db.session.commit()
 
+    def favicons(self):
+        pass
 
+    def counter(self):
+        pass
 
 
 

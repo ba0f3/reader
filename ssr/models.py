@@ -7,8 +7,10 @@ from ssr import db
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    parent_id = db.Column(db.Integer, default=-1)
     name = db.Column(db.String(255))
-    feeds = relationship("Feed")
+    order_id = db.Column(db.Integer, default=None)
+    user_feeds = relationship("UserFeed")
 
     def __init__(self, user_id=None, name=None):
         self.user_id = user_id
@@ -17,19 +19,30 @@ class Category(db.Model):
 
 class Feed(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
-    name = db.Column(db.String(255))
     feed_url = db.Column(db.Text)
     update_interval = db.Column(db.Integer)
     last_updated = db.Column(db.DateTime)
-    lock = db.Column(db.Boolean, default=False)
+    last_update_started = db.Column(db.DateTime)
+    update_lock = db.Column(db.Boolean, default=False)
+    last_error = db.Column(db.String(255))
+    site_url = db.Column(db.String(255))
+    favicon_url = db.Column(db.String(255))
+    last_favicon_checked = db.Column(db.DateTime)
 
-    def __init__(self, name=None, feed_url=None, user_id=None, category_id=None):
-        self.name = name
+    def __init__(self, feed_url=None):
         self.feed_url = feed_url
-        self.user_id = user_id
-        self.category_id = category_id
+
+
+class UserFeed(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'))
+    name = db.Column(db.String(255))
+    purge_interval = db.Column(db.Integer)
+    last_viewed = db.Column(db.DateTime)
+    order_id = db.Column(db.Integer, default=1)
+
 
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -40,6 +53,7 @@ class Entry(db.Model):
     published = db.Column(db.DateTime, nullable=False)
     author = db.Column(db.String(255))
     comments = db.Column(db.String(255))
+    feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'))
 
     def __init__(self, title=None, link=None, uuid=None, content=None, published=None, author=None, comments=None):
         self.title = title
@@ -55,8 +69,9 @@ class UserEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     entry_id = db.Column(db.Integer, db.ForeignKey('entry.id'))
-    feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'))
+    user_feed_id = db.Column(db.Integer, db.ForeignKey('user_feed.id'))
     unread = db.Column(db.Boolean, default=True)
+    started = db.Column(db.Boolean, default=False)
     note = db.Column(db.Text)
 
     def __init__(self, user_id=None, entry_id=None, feed_id=None, note=None):
@@ -78,8 +93,13 @@ class User(db.Model):
     username = db.Column(db.String(100))
     password = db.Column(db.String(100))
     active = db.Column(db.Boolean, default=False)
+    last_login = db.Column(db.DateTime)
+    access_level = db.Column(db.Integer, default=1)
+    email = db.Column(db.String(255))
+    full_name = db.Column(db.String(255))
+    created = db.Column(db.DateTime)
     categories = relationship("Category")
-    feeds = relationship("Feed")
+    user_feeds = relationship("UserFeed")
 
     def __init__(self, username=None, password=None, active=True):
         self.username = username

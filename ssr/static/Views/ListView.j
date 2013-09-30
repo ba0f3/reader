@@ -1,13 +1,13 @@
 @import <AppKit/CPView.j>
-@import "EntryTableView.j"
-@import "EntryItemView.j"
-@import "EntryIconView.j"
+@import "Widgets/EntryTableView.j"
+@import "Widgets/EntryItemView.j"
+@import "Widgets/EntryIconView.j"
 @import "../Models/Entry.j"
 
 var EntryItemViewWidth = 200.0,
     EntryItemViewHeight = 100.0;
 
-@implementation EntryListView : CPView
+@implementation ListView : CPView
 {
     EntryCollectionView entryCollectionView;
     EntryTableView tableView;
@@ -23,14 +23,13 @@ var EntryItemViewWidth = 200.0,
         data = [[CPArray alloc] init];
         for(var i = 1; i <= 1000; i++) {
             var entry = [Entry alloc];
-            [entry setTitle:@"Title " + i];
-            [entry setLink:@"http://domain.com" + i];
-            [entry setIntro:@"Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. At vero eos et accusam et justo duo dolores et ea rebum." + i];
+            [entry setTitle:@"HP Linux Imaging and Printing – Print, Scan and Fax Drivers for Linux"];
+            [entry setLink:@"http://hehemetal.com"];
+            [entry setIntro:@"HPLIP (Hewlett-Packard Linux Imaging & Printing) is an HP-developed solution for printing, scanning, and faxing with HP inkjet and laser based printers in Linux. The HPLIP project provides printing support for 2,264 printer models, including Deskjet, Officejet, Photosmart, PSC (Print Scan Copy), Business Inkjet, LaserJet, Edgeline MFP, and LaserJet MFP. (Note: Not all models are currently supported. See Supported Printers for more information.)"];
             [data addObject:entry];
         }
 
         var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]) - 26.0)];
-        [scrollView setBackgroundColor:[CPColor colorWithHexString:@"e0ecfa"]];
         [scrollView setAutohidesScrollers:YES];
         [scrollView setHasHorizontalScroller:NO];
         [scrollView setHasVerticalScroller:YES]; 
@@ -42,8 +41,10 @@ var EntryItemViewWidth = 200.0,
         tableView = [[EntryTableView alloc] initWithFrame:[scrollView bounds]];
         [tableView setHeaderView:nil];
         [tableView setCornerView:nil];
-        [tableView setUsesAlternatingRowBackgroundColors:YES];
+        [tableView setBackgroundColor:[CPColor colorWithHexString:@"cccccc"]];
+        //[tableView setUsesAlternatingRowBackgroundColors:YES];
         [tableView setRowHeight:EntryItemViewHeight];
+        [tableView setIntercellSpacing:CGSizeMake(1.0, 1.0)];
         //[tableView setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
 
         var iconColumn = [[CPTableColumn alloc] initWithIdentifier:@"icon"];
@@ -54,7 +55,8 @@ var EntryItemViewWidth = 200.0,
 
         var introColumn = [[CPTableColumn alloc] initWithIdentifier:@"intro"];
         [[introColumn headerView] setStringValue:@"Intro"];
-        [introColumn setMinWidth:EntryItemViewWidth];
+        [introColumn setWidth:CGRectGetWidth([scrollView bounds]) - 40];
+        [introColumn setResizingMask:CPTableColumnAutoresizingMask];
         [tableView addTableColumn:introColumn];
 
         [scrollView setDocumentView:tableView];
@@ -116,5 +118,4 @@ var EntryItemViewWidth = 200.0,
     }
     return aView;
 }
-
 @end

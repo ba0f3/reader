@@ -2,7 +2,7 @@
 @import "Models/Category.j"
 
 @import "Views/ContentView.j"
-@import "Views/EntryListView.j"
+@import "Views/ListView.j"
 @import "Views/NavigationView.j"
 
 var NavigationAreaWidth = 200.0,
@@ -11,7 +11,7 @@ var NavigationAreaWidth = 200.0,
 @implementation AppController : CPObject
 {
     NavigationView navigationArea;
-    EntryListView listArea;
+    ListView listArea;
     ContentView contentArea;
     CPView contentView
     CPSplitView verticalSplitter;
@@ -35,14 +35,15 @@ var NavigationAreaWidth = 200.0,
     navigationArea = [[NavigationView alloc] initWithFrame:CGRectMake(0.0, 0.0, NavigationAreaWidth, CGRectGetHeight([contentView bounds]))];
     [contentView addSubview:navigationArea];
 
-    verticalSplitter = [[CPSplitView alloc] initWithFrame:CGRectMake(NavigationAreaWidth, 0, CGRectGetWidth([contentView bounds]) - NavigationAreaWidth, CGRectGetHeight([contentView bounds]))];
+    // +2 => space b/w views
+    verticalSplitter = [[CPSplitView alloc] initWithFrame:CGRectMake(NavigationAreaWidth+2, 0, CGRectGetWidth([contentView bounds]) - NavigationAreaWidth, CGRectGetHeight([contentView bounds]))];
     [verticalSplitter setDelegate:self];
     [verticalSplitter setVertical:YES];
     [verticalSplitter setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable ];
     [contentView addSubview:verticalSplitter];
 
 
-    listArea = [[EntryListView alloc] initWithFrame:CGRectMake(0, 0, ListAreaWidth, CGRectGetHeight([verticalSplitter bounds]))];
+    listArea = [[ListView alloc] initWithFrame:CGRectMake(0, 0, ListAreaWidth, CGRectGetHeight([verticalSplitter bounds]))];
 
     contentArea = [[ContentView alloc] initWithFrame:CGRectMake(ListAreaWidth, 0.0, CGRectGetWidth([verticalSplitter bounds]) - ListAreaWidth, CGRectGetHeight([verticalSplitter bounds]))];
     [contentArea setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -52,4 +53,13 @@ var NavigationAreaWidth = 200.0,
     [verticalSplitter setButtonBar:[contentArea getButtonBar] forDividerAtIndex:0];
 }
 
+- (BOOL)splitView:(CPSplitView)aSplitView canCollapseSubview:(CPView)aSubview
+{
+    return YES;
+}
+
+- (BOOL)splitView:(CPSplitView)aSplitView shouldCollapseSubview:(CPView)aSubview forDoubleClickOnDividerAtIndex:(int)indexOfDivider
+{
+    return YES;
+}
 @end

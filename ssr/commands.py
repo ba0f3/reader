@@ -7,9 +7,9 @@ from ssr import app
 from ssr.updater import Updater;
 import uuid;
 
-DemoCommand = Manager(usage="Create/update demo data")
+DevelCommand = Manager(usage="Useful commands for development")
 
-@DemoCommand.command
+@DevelCommand.command
 def insert():
     "Insert demo data"
 
@@ -25,38 +25,22 @@ def insert():
     db.session.add(category2)
     db.session.commit()
 
-    feed = Feed("XDA", "http://feeds.feedburner.com/xda-developers/ShsH", admin.id, category1.id)
-    db.session.add(feed)
-    feed = Feed("Mashable", "http://feeds.mashable.com/Mashable", admin.id, category1.id)
-    db.session.add(feed)
-    feed = Feed("Lifehacker", "http://feeds.gawker.com/lifehacker/full", admin.id, category1.id)
-    db.session.add(feed)
-    feed = Feed("Lifehacker", "http://feeds.gawker.com/lifehacker/full", user1.id, category2.id)
-    db.session.add(feed)
+    feed1 = Feed("http://feeds.feedburner.com/xda-developers/ShsH")
+    db.session.add(feed1)
+    feed2 = Feed("http://feeds.mashable.com/Mashable")
+    db.session.add(feed2)
+    feed3 = Feed("http://feeds.gawker.com/lifehacker/full")
+    db.session.add(feed3)
 
     db.session.commit()
 
 
-@DemoCommand.command
+
+
+@DevelCommand.command
 def drop():
     "Drop all table"
     db.drop_all()
-
-
-class TestRssClient(Command):
-    "Test RSS Client"
-
-    def run(self):
-        uid = 1
-        user = User.query.get(uid)
-        for cat in user.categories:
-            for feed in cat.feeds:
-                d = feedparser.parse(feed.feed_url)
-                for entry in d.entries:
-                    unique_id = uuid.uuid5(uuid.NAMESPACE_URL, str(entry.link))
-                    e = Entry(entry.title, entry.link, unique_id, entry.content[0].value, parser.parse(entry.published), entry.author, entry.comments)
-                    db.session.add(e)
-                db.session.commit()
 
 
 UpdateCommand = Manager(usage = 'Perform database update')

@@ -2,24 +2,28 @@ from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask.ext.login import current_user
 from ssr import db
-
+import datetime
+import hashlib
+from ssr import logger
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     parent_id = db.Column(db.Integer, default=-1)
-    name = db.Column(db.String(255))
+    name = db.Column(db.String(255), nullable=False)
     order_id = db.Column(db.Integer, default=None)
     user_feeds = relationship("UserFeed")
 
-    def __init__(self, user_id=None, name=None):
+    def __init__(self, user_id, name, parent_id=-1):
         self.user_id = user_id
         self.name = name
+        self.parent_id = parent_id
 
 
 class Feed(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     feed_url = db.Column(db.Text)
+    feed_url_hash = db.Column(db.String(56), unique=True)
     update_interval = db.Column(db.Integer)
     last_updated = db.Column(db.DateTime)
     last_update_started = db.Column(db.DateTime)
@@ -29,8 +33,9 @@ class Feed(db.Model):
     favicon_url = db.Column(db.String(255))
     last_favicon_checked = db.Column(db.DateTime)
 
-    def __init__(self, feed_url=None):
+    def __init__(self, feed_url):
         self.feed_url = feed_url
+        self.feed_url_hash = hashlib.sha224(feed_url).hexdigest()
 
 
 class UserFeed(db.Model):
@@ -39,9 +44,15 @@ class UserFeed(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'))
     name = db.Column(db.String(255))
-    purge_interval = db.Column(db.Integer)
+    purge_interval = db.Column(db.Integer, default=60)
     last_viewed = db.Column(db.DateTime)
     order_id = db.Column(db.Integer, default=1)
+
+    def __init__(self, user_id, category_id, feed_id, name):
+        self.user_id = user_id
+        self.category_id = category_id
+        self.feed_id = feed_id
+        self.name = name
 
 
 class Entry(db.Model):
@@ -50,16 +61,19 @@ class Entry(db.Model):
     uuid = db.Column(db.String(255), unique=True, nullable=False)
     link = db.Column(db.Text, nullable=False)
     content = db.Column(db.Text, nullable=False)
+    content_hash = db.Column(db.String(56), unique=True)
     published = db.Column(db.DateTime, nullable=False)
     author = db.Column(db.String(255))
     comments = db.Column(db.String(255))
     feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'))
 
-    def __init__(self, title=None, link=None, uuid=None, content=None, published=None, author=None, comments=None):
+    def __init__(self, feed_id, title, link, uuid, content, published, author=None, comments=None):
+        self.feed_id = feed_id
         self.title = title
         self.link = link
         self.uuid = uuid
         self.content = content
+        self.content_hash = hashlib.sha224(content.encode('ascii', 'ignore')).hexdigest()
         self.published = published
         self.author = author
         self.comments = comments
@@ -74,10 +88,10 @@ class UserEntry(db.Model):
     started = db.Column(db.Boolean, default=False)
     note = db.Column(db.Text)
 
-    def __init__(self, user_id=None, entry_id=None, feed_id=None, note=None):
+    def __init__(self, user_id, entry_id, user_feed_id, note=None):
         self.user_id = user_id
         self.entry_id = entry_id
-        self.feed_id = feed_id
+        self.user_feed_id = user_feed_id
         self.note = note
 
 
@@ -87,25 +101,34 @@ class Tag(db.Model):
     user_entry_id = db.Column(db.Integer, db.ForeignKey('user_entry.id'))
     name = db.Column(db.String(255), nullable=False)
 
+    def __init__(self, user_id, user_entry_id, name):
+        self.user_id = user_id
+        self.user_entry_id = user_entry_id
+        self.name = name
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100))
-    password = db.Column(db.String(100))
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
     active = db.Column(db.Boolean, default=False)
     last_login = db.Column(db.DateTime)
     access_level = db.Column(db.Integer, default=1)
-    email = db.Column(db.String(255))
+    email = db.Column(db.String(255), unique=True, nullable=False)
     full_name = db.Column(db.String(255))
     created = db.Column(db.DateTime)
     categories = relationship("Category")
     user_feeds = relationship("UserFeed")
 
-    def __init__(self, username=None, password=None, active=True):
+    def __init__(self, username, password, email, active=True, full_name=None, access_level = 1):
         self.username = username
         if(password is not None):
             self.set_password(password)
+        self.email = email
+        self.full_name = full_name
         self.active = active
+        self.access_level = access_level
+        self.created = datetime.datetime.now()
 
     def get(self, uid):
         return User.query.get(uid)

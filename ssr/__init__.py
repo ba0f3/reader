@@ -6,12 +6,17 @@ from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 from flask.ext.restless import APIManager
 from flask.ext.login import LoginManager
-
-
-
+import logging
 import ssr.configs
 
 app = Flask(__name__)
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())
+if ssr.configs.DEBUG:
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)
 
 app.config['SECRET_KEY'] = ssr.configs.SECRET_KEY
 app.config['DEBUG'] = ssr.configs.DEBUG
@@ -23,8 +28,7 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(uid):
-    user = User()
-    return user.get(uid)
+    return User.query.get(uid)
 
 
 db = SQLAlchemy(app)
@@ -48,10 +52,6 @@ api_manager = APIManager(app, flask_sqlalchemy_db=db)
 # default. Allowed HTTP methods can be specified as well.
 api_manager.create_api(Category, methods=['GET', 'POST', 'DELETE'])
 api_manager.create_api(Feed, methods=['GET'])
-
-
-
-
 
 
 if __name__ == '__main__':

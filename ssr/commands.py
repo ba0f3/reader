@@ -13,28 +13,42 @@ DevelCommand = Manager(usage="Useful commands for development")
 def insert():
     "Insert demo data"
 
-    admin = User("admin", "s3cret")
+    admin = User("admin", "s3cret", "admin@example.com", full_name="Administrator")
     db.session.add(admin)
-    user1 = User("user1", "s3cret")
+    user1 = User("user1", "s3cret", "user1@example.com", full_name="Test User 1")
     db.session.add(user1)
     db.session.commit()
 
-    category1 = Category(admin.id, "News")
-    db.session.add(category1)
-    category2 = Category(user1.id, "Blog")
-    db.session.add(category2)
-    db.session.commit()
-
-    feed1 = Feed("http://feeds.feedburner.com/xda-developers/ShsH")
-    db.session.add(feed1)
-    feed2 = Feed("http://feeds.mashable.com/Mashable")
-    db.session.add(feed2)
-    feed3 = Feed("http://feeds.gawker.com/lifehacker/full")
-    db.session.add(feed3)
+    cat_admin_news = Category(admin.id, "News")
+    db.session.add(cat_admin_news)
+    cat_admin_magazine = Category(admin.id, "Magazine")
+    db.session.add(cat_admin_magazine)
+    cat_user1_blog = Category(user1.id, "Blog")
+    db.session.add(cat_user1_blog)
 
     db.session.commit()
 
+    feed_xda = Feed("http://feeds.feedburner.com/xda-developers/ShsH")
+    db.session.add(feed_xda)
+    feed_mashable = Feed("http://feeds.mashable.com/Mashable")
+    db.session.add(feed_mashable)
+    feed_lifehacker = Feed("http://feeds.gawker.com/lifehacker/full")
+    db.session.add(feed_lifehacker)
 
+    db.session.commit()
+
+    uf1 = UserFeed(admin.id, cat_admin_news.id, feed_xda.id, "XDA")
+    db.session.add(uf1)
+    uf2 = UserFeed(admin.id, cat_admin_news.id, feed_mashable.id, "Mashable")
+    db.session.add(uf2)
+    uf3 = UserFeed(admin.id, cat_admin_magazine.id, feed_lifehacker.id, "Life Hacker")
+    db.session.add(uf3)
+
+    uf4 = UserFeed(user1.id, cat_user1_blog.id, feed_lifehacker.id, "Lifehacker")
+    db.session.add(uf4)
+    uf5 = UserFeed(user1.id, cat_user1_blog.id, feed_mashable.id, "Mash")
+    db.session.add(uf5)
+    db.session.commit()
 
 
 @DevelCommand.command

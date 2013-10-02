@@ -1,23 +1,37 @@
 from ssr import logger
+import ssr.configs
 from ssr.models import *
-import datetime
+from datetime import datetime, timedelta
 import feedparser
 from dateutil import parser
 #from sqlalchemy.exc import IntegrityError
 import uuid;
-
+import ssr.configs
+from urlparse import urlparse
 import traceback
 
 class Updater:
 
     @staticmethod
     def feeds():
+        #TODO: check update interval &
         feeds = Feed.query.filter_by(update_lock=False).all()
         for feed in feeds:
-            logger.debug("Processing feed: %s", feed.id)
+            logger.debug("Processing feed: %s <%s>", feed.id, feed.feed_url)
+
+            if feed.update_interval is None:
+                update_interval = ssr.configs.FEED_UPDATE_TTL
+            else:
+                update_interval = feed.update_interval
+
+            if feed.last_updated is not None:
+                if feed.last_updated + timedelta(minutes=update_interval) > datetime.now():
+                    logger.info("This feed is recently updated, ignore")
+                continue
+
             logger.debug("Setting update lock")
             feed.update_lock = True
-            feed.last_update_started = datetime.datetime.now()
+            feed.last_update_started = datetime.now()
             db.session.add(feed)
             db.session.commit()
 
@@ -36,7 +50,7 @@ class Updater:
                         link = entry.link
                         content = entry.content[0].value if 'content' in entry else entry.summary
                         published = parser.parse(entry.published)
-                        author = entry.author
+                        author = entry.author if 'author' in entry else None
                         comments = entry.comments if 'comments' in entry else None
                         try:
                             e = Entry(feed.id, title, link, unique_id, content, published, author, comments)
@@ -71,16 +85,48 @@ class Updater:
             except Exception as ex:
                 logger.error("Error: %s", ex)
                 traceback.print_exc()
-                feed.last_error = e.message
+                feed.last_error = ex.message
 
             logger.debug("Release update lock for: %s", feed.feed_url)
             feed.update_lock = False
-            feed.last_updated = datetime.datetime.now()
             db.session.add(feed)
             db.session.commit()
 
-    def favicons(self):
-        pass
+    @staticmethod
+    def metadata(feed_id=None):
+        update_periods = {
+            'hourly': 60,
+            'daily': 1440,
+            'weekly': 10080,
+            'monthly': 43200,
+            'yearly': 525600
+        }
+        if feed_id is None:
+            feeds = Feed.query.all()
+        else:
+            feeds = Feed.query.filter_by(id=feed_id).all()
+        for feed in feeds:
+            d = feedparser.parse(feed.feed_url)
+            #title = d.channel.title
+            url = urlparse(d.channel.link)
+            link = "%s://%s" % (url.scheme, url.netloc)
+            #update_interval = ssr.configs.FEED_UPDATE_TTL
+            if 'ttl' in d.channel:
+                update_interval = d.channel.ttl
+            else:
+                "The period over which the channel is updated. Allowed values are 'hourly', 'daily', 'weekly', 'monthly', 'yearly'. If omitted, 'daily' is assumed."
+                update_period = d.channel.sy_updateperiod if 'sy_updateperiod' in d.channel else ssr.configs.FEED_UPDATE_PERIOD
+                "Frequency of updates, in relation to sy_updateperiod. Indicates how many times in each sy_updateperiod the channel is updated."
+                update_frequency = int(d.channel.sy_updatefrequency) if 'sy_updatefrequency' in d.channel else ssr.configs.FEED_UPDATE_FREQUENCY
+
+                update_interval = update_periods[update_period] / update_frequency
+
+            feed.site_url = link
+            feed.update_interval = update_interval
+
+            db.session.add(feed)
+            db.session.commit()
+
 
     def counter(self):
         pass

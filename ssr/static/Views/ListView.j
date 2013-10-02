@@ -1,8 +1,8 @@
 @import <AppKit/CPView.j>
 @import "Widgets/EntryTableView.j"
 @import "Widgets/EntryItemView.j"
-@import "Widgets/EntryIconView.j"
-@import "../Models/Entry.j"
+@import "Widgets/CPFaviconView.j"
+@import "../Constants.j"
 
 var EntryItemViewWidth = 200.0,
     EntryItemViewHeight = 100.0;
@@ -20,14 +20,9 @@ var EntryItemViewWidth = 200.0,
     self = [super initWithFrame:aFrame];
     if (self)
     {
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onHeadlineLoaded:) name:NOTIFICATION_HEADLINE_LOADED object:nil];
+
         data = [[CPArray alloc] init];
-        for(var i = 1; i <= 1000; i++) {
-            var entry = [Entry alloc];
-            [entry setTitle:@"HP Linux Imaging and Printing – Print, Scan and Fax Drivers for Linux"];
-            [entry setLink:@"http://hehemetal.com"];
-            [entry setIntro:@"HPLIP (Hewlett-Packard Linux Imaging & Printing) is an HP-developed solution for printing, scanning, and faxing with HP inkjet and laser based printers in Linux. The HPLIP project provides printing support for 2,264 printer models, including Deskjet, Officejet, Photosmart, PSC (Print Scan Copy), Business Inkjet, LaserJet, Edgeline MFP, and LaserJet MFP. (Note: Not all models are currently supported. See Supported Printers for more information.)"];
-            [data addObject:entry];
-        }
 
         var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]) - 26.0)];
         [scrollView setAutohidesScrollers:YES];
@@ -88,6 +83,19 @@ var EntryItemViewWidth = 200.0,
     return self;
 }
 
+- (void)onHeadlineLoaded:(CPNotification)notification
+{
+    CPLog('onHeadlineLoaded:%@', notification);
+    var headlines = [notification object];
+    for(var i = 0; i < headlines.length; i ++)
+    {
+        var headline = headlines[i];
+        [data addObject:headline];
+    }
+    [tableView reloadData];
+
+}
+
 - (int)numberOfRowsInTableView:(CPTableView)aTableView {
     return [data count];
 }
@@ -114,7 +122,7 @@ var EntryItemViewWidth = 200.0,
     else if (identifier == "icon")
     {
         if (aView == nil)
-            aView = [[EntryIconView alloc] initWithFrame:CGRectMake(0, 0, 20, 20)];
+            aView = [[CPFaviconView alloc] initWithFrame:CGRectMake(0, 0, 20, 20)];
     }
     return aView;
 }

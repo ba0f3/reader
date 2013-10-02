@@ -1,6 +1,8 @@
 @import <Foundation/CPObject.j>
-@import "Models/Category.j"
 
+@import "Constants.j"
+@import "Controllers/CategoryController.j"
+@import "Controllers/HeadlineController.j"
 @import "Views/ContentView.j"
 @import "Views/ListView.j"
 @import "Views/NavigationView.j"
@@ -15,6 +17,8 @@ var NavigationAreaWidth = 200.0,
     ContentView contentArea;
     CPView contentView
     CPSplitView verticalSplitter;
+    CategoryController categoryController @accessors(readonly);
+    HeadlineController headlineController @accessors(readonly);
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -28,6 +32,10 @@ var NavigationAreaWidth = 200.0,
 
     // Uncomment the following line to turn on the standard menu bar.
     //[CPMenu setMenuBarVisible:YES];
+
+    //TODO: xu ly sau khi login
+    categoryController = [[CategoryController alloc] init];
+    headlineController = [[HeadlineController alloc] init];
 }
 
 - (void)createLayout
@@ -51,6 +59,11 @@ var NavigationAreaWidth = 200.0,
     [verticalSplitter addSubview:listArea];
     [verticalSplitter addSubview:contentArea];
     [verticalSplitter setButtonBar:[contentArea getButtonBar] forDividerAtIndex:0];
+}
+
++ (void)setState
+{
+
 }
 
 - (BOOL)splitView:(CPSplitView)aSplitView canCollapseSubview:(CPView)aSubview

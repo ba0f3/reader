@@ -9,3 +9,4 @@ flask-login
 flask-principal
 feedparser
 apscheduler
+listparser

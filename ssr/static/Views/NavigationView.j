@@ -1,14 +1,18 @@
 @import <AppKit/CPView.j>
 @import "Widgets/FolderItemView.j"
+@import "../Constants.j"
 
 @implementation NavigationView : CPView
 {
-	CPDictionary items;
+	CPDictionary items @accessors;
+	CPOutlineView _outlineView;
 }
 
 - (void)initWithFrame:(CGRect)aFrame
 {
-	items = [CPDictionary dictionaryWithObjects:[[], [], [@"Unread", @"Favorites", @"Archives"], [@"Android", @"Ubuntu", @"Linux"], [@"Read Later", @"RSS News"]] forKeys:[@"Software", @"Developement", @"Feeds", @"Labels", @"Smart Folders"]];
+	[[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onCategoryLoaded:) name:NOTIFICATION_CATEGORY_LOADED object:nil];
+
+	items = [CPDictionary dictionaryWithObjects:[[@"Android", @"Ubuntu", @"Linux"], [@"Unread", @"Favorites", @"Archives"]] forKeys:[@"Labels", @"All Feeds"]];
 	self = [super initWithFrame:aFrame];
     if (self)
     {
@@ -23,7 +27,7 @@
 	    [scrollView setHasVerticalScroller:YES]; 
 	    [scrollView setAutoresizingMask:CPViewHeightSizable];
 
-	    var outlineView = [[CPOutlineView alloc] initWithFrame:[scrollView bounds]];
+	    _outlineView = [[CPOutlineView alloc] initWithFrame:[scrollView bounds]];
 	    var tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"tableColumn"];
 	    [tableColumn setWidth:200.0];
 
@@ -31,20 +35,20 @@
 	    //var dataView  = [[FolderItemView alloc] initWithFrame:CGRectMake(0, 0, 200, 25)];
 	    //[tableColumn setDataView:dataView];
 
-	    [outlineView setHeaderView:nil];
-	    [outlineView setCornerView:nil];
-	    [outlineView addTableColumn:tableColumn];
-	    [outlineView setOutlineTableColumn:tableColumn];
-	    [outlineView setBackgroundColor:[CPColor colorWithHexString:@"E0E0E0"]];
+	    [_outlineView setHeaderView:nil];
+	    [_outlineView setCornerView:nil];
+	    [_outlineView addTableColumn:tableColumn];
+	    [_outlineView setOutlineTableColumn:tableColumn];
+	    [_outlineView setBackgroundColor:[CPColor colorWithHexString:@"E0E0E0"]]; // 333333
 
-	    //[outlineView setAutoresizingMask:CPViewHeightSizable];
+	    //[_outlineView setAutoresizingMask:CPViewHeightSizable];
 
-	    [scrollView setDocumentView:outlineView];
+	    [scrollView setDocumentView:_outlineView];
 
 	    [self addSubview:scrollView];
 
-		[outlineView setDelegate:self];
-	    [outlineView setDataSource:self];
+		[_outlineView setDelegate:self];
+	    [_outlineView setDataSource:self];
 
 	    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight([self bounds]) - 26.0, CGRectGetWidth([self bounds]), 26.0)]; //you need to use your own frame obviously
 	    [buttonBar setHasResizeControl:NO];
@@ -68,13 +72,6 @@
 	    [popUpButton setEnabled:YES];
 	    [popUpButton addItemsWithTitles: [CPArray arrayWithObjects:
 	                @"Choose an action:",
-	                @"Action 1",
-	                @"Action 2",
-	                @"Action 3",
-	                @"Action 4",
-	                @"Action 5",
-	                @"Action 6",
-	                @"Action 7",
 	                nil]
 	    ];
 	    [popUpButton setAutoresizingMask:CPViewMaxYMargin];
@@ -92,6 +89,19 @@
 	}
 
     return self;
+}
+
+- (void)onCategoryLoaded:(CPNotification)notification
+{
+    CPLog('onCategoryLoaded:%@', notification);
+    var categories = [notification object];
+    for(var i = 0; i < categories.length; i ++)
+    {
+    	var category = categories[i];
+    	[items setObject:[category feeds] forKey:[category name]]
+    }
+    [_outlineView reloadData];
+
 }
 
 - (id)outlineView:(CPOutlineView)outlineView child:(int)index ofItem:(id)item
@@ -148,14 +158,11 @@
 - (void)outlineView:(CPOutlineView)outlineView willDisplayView:(id)dataView forTableColumn:(CPTableColumn)tableColumn item:(id)item
 {
 	CPLog("outlineView:%@ willDisplayView:%@ forTableColumn:%@ item:%@", outlineView, dataView, tableColumn, item);
-
-	if([dataView hasThemeState:CPThemeStateGroupRow])
+	if([item className] == 'Feed')
 	{
-		CPLog('CPThemeStateGroupRow');
-	}
-	else
-	{
-		CPLog('CPThemeStateTableDataView');
+		[dataView setStringValue:[item name]];
 	}
 }
+
+//[items setValue:[] forKey:@"Test"];
 @end

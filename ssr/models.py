@@ -5,6 +5,7 @@ from ssr import db
 import datetime
 import hashlib
 from ssr import logger
+from HTMLParser import HTMLParser
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -14,10 +15,11 @@ class Category(db.Model):
     order_id = db.Column(db.Integer, default=None)
     user_feeds = relationship("UserFeed")
 
-    def __init__(self, user_id, name, parent_id=-1):
+    def __init__(self, user_id, name, parent_id=-1, order_id=None):
         self.user_id = user_id
         self.name = name
         self.parent_id = parent_id
+        self.order_id = order_id
 
 
 class Feed(db.Model):
@@ -30,8 +32,6 @@ class Feed(db.Model):
     update_lock = db.Column(db.Boolean, default=False)
     last_error = db.Column(db.String(255))
     site_url = db.Column(db.String(255))
-    favicon_url = db.Column(db.String(255))
-    last_favicon_checked = db.Column(db.DateTime)
 
     def __init__(self, feed_url):
         self.feed_url = feed_url
@@ -61,7 +61,7 @@ class Entry(db.Model):
     uuid = db.Column(db.String(255), unique=True, nullable=False)
     link = db.Column(db.Text, nullable=False)
     content = db.Column(db.Text, nullable=False)
-    content_hash = db.Column(db.String(56), unique=True)
+    content_hash = db.Column(db.String(56))
     published = db.Column(db.DateTime, nullable=False)
     author = db.Column(db.String(255))
     comments = db.Column(db.String(255))
@@ -85,7 +85,7 @@ class UserEntry(db.Model):
     entry_id = db.Column(db.Integer, db.ForeignKey('entry.id'))
     user_feed_id = db.Column(db.Integer, db.ForeignKey('user_feed.id'))
     unread = db.Column(db.Boolean, default=True)
-    started = db.Column(db.Boolean, default=False)
+    stared = db.Column(db.Boolean, default=False)
     note = db.Column(db.Text)
 
     def __init__(self, user_id, entry_id, user_feed_id, note=None):

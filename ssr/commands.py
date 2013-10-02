@@ -6,6 +6,7 @@ from dateutil import parser
 from ssr import app
 from ssr.updater import Updater;
 import uuid;
+from ssr.helpers import import_opml
 
 DevelCommand = Manager(usage="Useful commands for development")
 
@@ -57,11 +58,23 @@ def drop():
     db.drop_all()
 
 
-UpdateCommand = Manager(usage = 'Perform database update')
+@DevelCommand.option('-u', '--user-id', dest='uid', help="User for import data to")
+@DevelCommand.option('-p', '--path', dest='path', help="Path to local OPML file or online url")
+def opml(uid, path):
+    "Import OPML"
+    import_opml(uid, path)
+
+
+UpdateCommand = Manager(usage='Perform database update')
 
 @UpdateCommand.command
 def feeds():
+    "Update feed entries"
     Updater.feeds()
 
+@UpdateCommand.command
+def metadata():
+    "Update feed metadata, such as: site url, favicon, update interval"
+    Updater.metadata()
 
 

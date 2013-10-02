@@ -5,7 +5,7 @@
 {
     int row;
     CPTextField title;
-    CPUrlLabel link;
+    CPUrlLabel site;
     CPTextField intro;
     id entry;
 }
@@ -30,11 +30,11 @@
         [title setTextShadowOffset:CGSizeMake(1.0, 1.0)];
         [title setFont:fontDosisBold];
 
-        link = [[CPUrlLabel alloc] initWithFrame:CGRectMake(2.0, 16.0, CGRectGetWidth([self bounds]), 24)];
-        [link setAutoresizingMask:CPViewWidthSizable];
-        [link setUrl:@""];
-        [link sizeToFit];
-        [link setFont:fontDosis];
+        site = [[CPUrlLabel alloc] initWithFrame:CGRectMake(2.0, 16.0, CGRectGetWidth([self bounds]), 24)];
+        [site setAutoresizingMask:CPViewWidthSizable];
+        [site setUrl:@""];
+        [site sizeToFit];
+        [site setFont:fontDosis];
 
         intro = [[CPTextField alloc] initWithFrame:CGRectMake(2.0, 40.0, CGRectGetWidth([self bounds]), 56)];
         [intro setAutoresizingMask:CPViewWidthSizable];
@@ -43,7 +43,7 @@
 
 
         [self addSubview:title];
-        [self addSubview:link];
+        [self addSubview:site];
         [self addSubview:intro];
     }
     return self;
@@ -56,8 +56,8 @@
     entry = anEntry;
 
     [title setStringValue:[anEntry title]];
-    [link setStringValue:[anEntry link]];
-    [link sizeToFit];
+    [site setStringValue:[anEntry site]];
+    [site sizeToFit];
     [intro setStringValue:[anEntry intro]];
 }
 

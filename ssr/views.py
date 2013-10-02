@@ -1,7 +1,9 @@
 from flask import *
-from ssr import app
+from ssr import app, db, logger
+
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from ssr.models import User
+from ssr.helpers import strip_html_tags
 
 @app.route('/')
 @login_required
@@ -31,3 +33,62 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('.login'))
+
+@app.route('/api/headlines')
+@login_required
+def get_headlines():
+    user_id = current_user.id
+    headline_list = list()
+    sql = """SELECT
+            ue.id, e.title, f.site_url, e.content, ue.unread, ue.stared
+        FROM user_entry AS ue
+        INNER JOIN entry AS e ON e.id = ue.entry_id
+        INNER JOIN feed AS f ON f.id = e.feed_id
+        WHERE ue.user_id = %s
+        ORDER BY e.published DESC
+        LIMIT 30"""
+    rows = db.engine.execute(sql, user_id)
+    for row in rows:
+        entry = {
+            'id': row.id,
+            'title': row.title,
+            'site': row.site_url,
+            'intro': strip_html_tags(row.content).strip(), # TODO: tao intro ngay khi update feed
+            'unread': row.unread,
+            'stared': row.stared,
+        }
+        headline_list.append(entry)
+    return jsonify(count=len(headline_list), objects=headline_list)
+
+
+@app.route('/api/entry')
+@login_required
+def get_entries():
+    user_id = current_user.id
+    entry_list = list()
+    sql = """SELECT
+            ue.id, ue.entry_id, e.title, f.site_url, e.link, e.content,
+            e.published, e.author, e.comments, ue.unread, ue.stared, ue.note
+        FROM user_entry AS ue
+        INNER JOIN entry AS e ON e.id = ue.entry_id
+        INNER JOIN feed AS f ON f.id = e.feed_id
+        WHERE ue.user_id = %s LIMIT 30"""
+    rows = db.engine.execute(sql, user_id)
+    for row in rows:
+        entry = {
+            'id': row.id,
+            'title': row.title,
+            'link': row.link,
+            'site': row.site_url,
+            'intro': strip_html_tags(row.content).strip(), # TODO: tao intro ngay khi update feed
+            'content': row.content,
+            'published': row.published,
+            'author': row.author,
+            'comments': row.comments,
+            'unread': row.unread,
+            'stared': row.stared,
+            'note': row.note,
+        }
+        entry_list.append(entry)
+    return jsonify(count=len(entry_list), objects=entry_list)
+

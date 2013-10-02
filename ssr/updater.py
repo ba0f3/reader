@@ -27,7 +27,7 @@ class Updater:
             if feed.last_updated is not None:
                 if feed.last_updated + timedelta(minutes=update_interval) > datetime.now():
                     logger.info("This feed is recently updated, ignore")
-                continue
+                    continue
 
             logger.debug("Setting update lock")
             feed.update_lock = True

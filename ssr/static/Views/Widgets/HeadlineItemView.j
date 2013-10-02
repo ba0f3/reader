@@ -1,7 +1,7 @@
 @import <AppKit/CPTextField.j>
 @import "CPUrlLabel.j"
 
-@implementation EntryItemView : CPView
+@implementation HeadlineItemView : CPView
 {
     int row;
     CPTextField title;

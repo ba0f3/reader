@@ -1,6 +1,6 @@
 @import <AppKit/CPTableView.j>
 
-@implementation EntryTableView : CPTableView
+@implementation HeadlineTableView : CPTableView
 {
 
 }

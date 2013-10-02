@@ -1,6 +1,5 @@
 @import <AppKit/CPImage.j>
 @import <AppKit/CPImageView.j>
-@import "EntryIconView.j"
 
 var GETFV_SERVICE = @"http://g.etfv.co/"
 @implementation CPFaviconView : CPView

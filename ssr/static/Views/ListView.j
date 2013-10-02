@@ -122,4 +122,12 @@ var HeadlineItemViewWidth = 200.0,
     }
     return aView;
 }
+
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
+{
+    CPLog("tableView:%@ shouldSelectRow:%@", aTableView, rowIndex);
+    var headline = [data objectAtIndex:rowIndex];
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_SELECTED object:headline];
+    return YES;
+}
 @end

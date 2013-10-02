@@ -61,26 +61,29 @@ def get_headlines():
     return jsonify(count=len(headline_list), objects=headline_list)
 
 
-@app.route('/api/entry')
+@app.route('/api/entry/<int:user_entry_id>')
 @login_required
-def get_entries():
+def get_entries(user_entry_id):
     user_id = current_user.id
-    entry_list = list()
+
     sql = """SELECT
-            ue.id, ue.entry_id, e.title, f.site_url, e.link, e.content,
+            ue.entry_id, e.title, e.link, f.site_url, e.content,
             e.published, e.author, e.comments, ue.unread, ue.stared, ue.note
         FROM user_entry AS ue
         INNER JOIN entry AS e ON e.id = ue.entry_id
         INNER JOIN feed AS f ON f.id = e.feed_id
-        WHERE ue.user_id = %s LIMIT 30"""
-    rows = db.engine.execute(sql, user_id)
+        WHERE ue.user_id = %s
+        AND ue.id = %s
+        LIMIT 1""" % (user_id, user_entry_id)
+    logger.debug(sql)
+    rows = db.engine.execute(sql)
     for row in rows:
+        print row
         entry = {
-            'id': row.id,
+            'id': row.entry_id,
             'title': row.title,
-            'link': row.link,
             'site': row.site_url,
-            'intro': strip_html_tags(row.content).strip(), # TODO: tao intro ngay khi update feed
+            'link': row.link,
             'content': row.content,
             'published': row.published,
             'author': row.author,
@@ -89,6 +92,6 @@ def get_entries():
             'stared': row.stared,
             'note': row.note,
         }
-        entry_list.append(entry)
-    return jsonify(count=len(entry_list), objects=entry_list)
+        return jsonify(objects=entry)
+    abort(404)
 

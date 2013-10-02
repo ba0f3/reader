@@ -6,7 +6,6 @@
 	CPString title @accessors;
 	CPString link @accessors;
 	CPString site @accessors;
-	CPString intro @accessors;
 	CPString content @accessors;
 	CPString published @accessors;
 	CPString author @accessors;
@@ -24,7 +23,6 @@
 		[self setTitle:obj.title];
 		[self setLink:obj.link];
 		[self setSite:obj.site];
-		[self setIntro:obj.intro];
 		[self setContent:obj.content];
 		[self setPublished:obj.published];
 		[self setAuthor:obj.author];

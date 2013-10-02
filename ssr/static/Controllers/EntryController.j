@@ -2,8 +2,7 @@
 @import "../ServerConnection.j"
 @import "../Models/Entry.j"
 
-
-var path = @"/api/entry"
+var path = @"/api/entry/%s"
 @implementation EntryController : CPObject
 {
 }
@@ -13,14 +12,13 @@ var path = @"/api/entry"
 	self = [super init];
 	if(self)
 	{
-		[self loadEntries];
 	}
 	return self;
 }
 
-- (void)loadEntries
+- (void)loadEntry:(int)entryId
 {
-	[ServerConnection get:path setDelegate:self];
+	[ServerConnection get:[CPString stringWithFormat:path,entryId] setDelegate:self];
 }
 
 -(void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
@@ -30,10 +28,7 @@ var path = @"/api/entry"
 	var entries = [CPMutableArray array];
 
 	data = JSON.parse(data);
-	for (var i = 0; i < data.count; i++) {
-		var entry = [[Entry alloc] initFromObject:data.objects[i]];
-		[entries addObject:entry];
-	}
-	[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ENTRY_LOADED object:entries];
+	var entry = [[Entry alloc] initFromObject:data.objects];
+	[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ENTRY_LOADED object:entry];
 }
 @end

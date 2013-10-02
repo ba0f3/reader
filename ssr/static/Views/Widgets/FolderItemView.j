@@ -1,10 +1,10 @@
 @import <AppKit/CPImage.j>
 @import <AppKit/CPImageView.j>
-@import "EntryIconView.j"
+@import "CPFaviconView.j"
 
 @implementation FolderItemView : CPView
 {
-    EntryIconView icon;
+    CPFaviconView icon;
     CPTextField name;
     CPTextField unread;
 }
@@ -14,7 +14,7 @@
     self = [super initWithFrame:aFrame];
     if (self)
     {
-        icon = [[EntryIconView alloc] initWithFrame:CGRectMake(0, 2.0, 20, 20)];
+        icon = [[CPFaviconView alloc] initWithFrame:CGRectMake(0, 2.0, 20, 20)];
         name = [[CPTextField alloc] initWithFrame:CGRectMake(20.0, 0.0, CGRectGetWidth([self bounds]) - 20.0, 24)];
         [name setAutoresizingMask:CPViewWidthSizable];
         [name setLineBreakMode:CPLineBreakByTruncatingTail];

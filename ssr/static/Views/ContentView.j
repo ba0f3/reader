@@ -1,17 +1,26 @@
 @import <AppKit/CPView.j>
-
+@import "../Constants.j"
+@import "../Controllers/EntryController.j"
+@import "Widgets/EntryView.j"
 @implementation ContentView : CPView
 {
    CPButtonBar buttonBar;
    CPView welcomeMessage;
    CPScrollView scrollView;
+   EntryView entryView;
+   EntryController entryController;
 }
 
 - (void)initWithFrame:(CGRect)aFrame
 {
-    self = [super initWithFrame:aFrame];
+    var self = [super initWithFrame:aFrame];
     if (self)
     {
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onHeadlineSelected:) name:NOTIFICATION_HEADLINE_SELECTED object:nil];
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onEntryLoaded:) name:NOTIFICATION_ENTRY_LOADED object:nil];
+
+        entryController = [[EntryController alloc] init];
+
         scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]) - 26.0)];
         [scrollView setAutohidesScrollers:YES];
         [scrollView setHasHorizontalScroller:NO];
@@ -52,6 +61,21 @@
     return self;
 }
 
+- (void)onHeadlineSelected:(CPNotification)notification
+{
+    CPLog('onHeadlineSelected:%@', notification);
+    var headline = [notification object];
+    [entryController loadEntry:headline.id];
+}
+
+- (void)onEntryLoaded:(CPNotification)notification
+{
+    CPLog('onEntryLoaded:%@', notification);
+    var entry = [notification object];
+    [entryView setEntry:entry];
+    [self showEntryView];
+}
+
 - (void)showWelcomeMessage
 {
     if(!welcomeMessage)
@@ -84,11 +108,18 @@
     [scrollView setHidden:YES];
     [welcomeMessage setHidden:NO];
 }
-- (void)showArticle
+
+- (void)showEntryView
 {
+    if(!entryView)
+    {
+        entryView = [[EntryView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([scrollView bounds]), CGRectGetHeight([scrollView bounds]))];
+        [scrollView setDocumentView:entryView];
+    }
     [scrollView setHidden:NO];
     [welcomeMessage setHidden:YES];
 }
+
 - (CPButtonBar)getButtonBar
 {
     return buttonBar;

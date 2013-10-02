@@ -1,16 +1,15 @@
 @import <AppKit/CPView.j>
-@import "Widgets/EntryTableView.j"
-@import "Widgets/EntryItemView.j"
+@import "Widgets/HeadlineTableView.j"
+@import "Widgets/HeadlineItemView.j"
 @import "Widgets/CPFaviconView.j"
 @import "../Constants.j"
 
-var EntryItemViewWidth = 200.0,
-    EntryItemViewHeight = 100.0;
+var HeadlineItemViewWidth = 200.0,
+    HeadlineItemViewHeight = 100.0;
 
 @implementation ListView : CPView
 {
-    EntryCollectionView entryCollectionView;
-    EntryTableView tableView;
+    HeadlineTableView tableView;
     CPArray data;
 
 }
@@ -30,15 +29,12 @@ var EntryItemViewWidth = 200.0,
         [scrollView setHasVerticalScroller:YES]; 
         [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-        //entryCollectionView = [[EntryCollectionView alloc] initWithFrame:[scrollView bounds]];
-        //[entryCollectionView setContent:locations];
-
-        tableView = [[EntryTableView alloc] initWithFrame:[scrollView bounds]];
+        tableView = [[HeadlineTableView alloc] initWithFrame:[scrollView bounds]];
         [tableView setHeaderView:nil];
         [tableView setCornerView:nil];
         [tableView setBackgroundColor:[CPColor colorWithHexString:@"cccccc"]];
         //[tableView setUsesAlternatingRowBackgroundColors:YES];
-        [tableView setRowHeight:EntryItemViewHeight];
+        [tableView setRowHeight:HeadlineItemViewHeight];
         [tableView setIntercellSpacing:CGSizeMake(1.0, 1.0)];
         //[tableView setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
 
@@ -116,7 +112,7 @@ var EntryItemViewWidth = 200.0,
     if (identifier == "intro")
     {
         if (aView == nil)
-            aView = [[EntryItemView alloc] initWithFrame:CGRectMake(0, 0, EntryItemViewWidth, EntryItemViewHeight)];
+            aView = [[HeadlineItemView alloc] initWithFrame:CGRectMake(0, 0, HeadlineItemViewWidth, HeadlineItemViewHeight)];
         [aView setRowIndex:aRow];
     }
     else if (identifier == "icon")

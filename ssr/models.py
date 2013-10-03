@@ -1,11 +1,11 @@
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask.ext.login import current_user
-from ssr import db
+from ssr import app, db, logger
+from ssr.helpers import html_sanitizer
 import datetime
 import hashlib
-from ssr import logger
-from HTMLParser import HTMLParser
+
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -68,16 +68,20 @@ class Entry(db.Model):
     feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'))
 
     def __init__(self, feed_id, title, link, uuid, content, published, author=None, comments=None):
+        content = html_sanitizer(content)
         self.feed_id = feed_id
         self.title = title
         self.link = link
         self.uuid = uuid
         self.content = content
-        self.content_hash = hashlib.sha224(content.encode('ascii', 'ignore')).hexdigest()
+        self.content_hash = Entry.hash_content(content)
         self.published = published
         self.author = author
         self.comments = comments
 
+    @staticmethod
+    def hash_content(content):
+        return hashlib.sha224(content.encode('ascii', 'ignore')).hexdigest()
 
 class UserEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)

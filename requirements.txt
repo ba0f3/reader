@@ -10,3 +10,4 @@ flask-principal
 feedparser
 apscheduler
 listparser
+beautifulsoup4

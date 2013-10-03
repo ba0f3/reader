@@ -1,12 +1,12 @@
 from flask.ext.script import Manager, Command
-from ssr import db
+from ssr import db, logger
 from ssr.models import *
 import feedparser
 from dateutil import parser
 from ssr import app
 from ssr.updater import Updater;
 import uuid;
-from ssr.helpers import import_opml
+from ssr.helpers import import_opml, html_sanitizer
 
 DevelCommand = Manager(usage="Useful commands for development")
 
@@ -51,7 +51,6 @@ def insert():
     db.session.add(uf5)
     db.session.commit()
 
-
 @DevelCommand.command
 def drop():
     "Drop all table"
@@ -64,6 +63,25 @@ def opml(uid, path):
     "Import OPML"
     import_opml(uid, path)
 
+@DevelCommand.command
+def sanitizer():
+    entries = Entry.query.all()
+
+    for entry in entries:
+        print "========================"
+        print "Original:"
+        print "========================"
+        print entry.content_hash
+        print entry.content
+        result = html_sanitizer(entry.content)
+        print "========================"
+        print "Cleaned:"
+        print "========================"
+        print result
+        entry.content = result
+        entry.content_hash = Entry.hash_content(result)
+        db.session.add(entry)
+    db.session.commit()
 
 UpdateCommand = Manager(usage='Perform database update')
 

@@ -1,5 +1,7 @@
 from HTMLParser import HTMLParser
 import opml
+import re
+from bs4 import BeautifulSoup, Comment
 from ssr import db
 from ssr.models import *
 
@@ -61,3 +63,32 @@ def import_opml(user_id, path):
                     db.session.commit()
                 else:
                     logger.warn("Nested category is not supported yet, ignored!")
+
+
+def html_sanitizer(html):
+    """ Sanitize HTML filter, borrowed from http://djangosnippets.org/snippets/205/"""
+
+    rjs = r'[\s]*(&#x.{1,7})?'.join(list('javascript:'))
+    rvb = r'[\s]*(&#x.{1,7})?'.join(list('vbscript:'))
+    re_scripts = re.compile('(%s)|(%s)' % (rjs, rvb), re.IGNORECASE)
+
+    valid_tags = ['a', 'br', 'b', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'li', 'ol',
+                  'p', 'strong', 'table', 'tr', 'td', 'th', 'u', 'ul', 'thead', 'tbody', 'tfoot',
+                  'em', 'dd', 'dt', 'dl', 'span', 'div', 'del', 'add', 'i', 'hr', 'pre', 'blockquote',
+                  'address', 'code', 'caption', 'abbr', 'acronym', 'cite', 'dfn', 'q', 'ins', 'sup', 'sub',
+                  'samp', 'tt', 'small', 'big', 'video', 'audio', 'canvas']
+    valid_attrs = ['href', 'src', 'width', 'height']
+
+    soup = BeautifulSoup(html)
+    for comment in soup.findAll(text=lambda text: isinstance(text, Comment)):
+        comment.extract()
+    for tag in soup.findAll(True):
+        if tag.name not in valid_tags:
+            tag.hidden = True
+        attrs = tag.attrs
+        tag.attrs = {}
+        for attr in attrs:
+            if attr in valid_attrs:
+                val = re_scripts.sub('', attrs[attr])  # Remove scripts (vbs & js)
+                tag.attrs[attr] = val
+    return soup.renderContents().decode('utf8')

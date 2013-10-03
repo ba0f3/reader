@@ -2,6 +2,8 @@
 @import "../Constants.j"
 @import "../Controllers/EntryController.j"
 @import "Widgets/EntryView.j"
+
+var entryCache = {};
 @implementation ContentView : CPView
 {
    CPButtonBar buttonBar;
@@ -79,13 +81,24 @@
 {
     CPLog('onHeadlineSelected:%@', notification);
     var headline = [notification object];
-    [entryController loadEntry:headline.id];
+    if(entryCache.hasOwnProperty(headline.id))
+    {
+        [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ENTRY_LOADED object:entryCache[headline.id]];
+    }
+    else
+    {
+        [entryController loadEntry:headline.id];
+    }
 }
 
 - (void)onEntryLoaded:(CPNotification)notification
 {
     CPLog('onEntryLoaded:%@', notification);
     var entry = [notification object];
+
+    if(!entryCache.hasOwnProperty(entry.id))
+        entryCache[entry.id] = entry;
+
     [entryView setEntry:entry];
     [self showEntryView];
 }

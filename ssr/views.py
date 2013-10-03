@@ -67,7 +67,7 @@ def get_entries(user_entry_id):
     user_id = current_user.id
 
     sql = """SELECT
-            ue.entry_id, e.title, e.link, f.site_url, e.content,
+            ue.id, e.title, e.link, f.site_url, e.content,
             e.published, e.author, e.comments, ue.unread, ue.stared, ue.note
         FROM user_entry AS ue
         INNER JOIN entry AS e ON e.id = ue.entry_id
@@ -80,7 +80,7 @@ def get_entries(user_entry_id):
     for row in rows:
         print row
         entry = {
-            'id': row.entry_id,
+            'id': row.id,
             'title': row.title,
             'site': row.site_url,
             'link': row.link,

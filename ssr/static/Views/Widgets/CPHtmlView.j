@@ -41,32 +41,22 @@
 
     _loadCallback = function()
     {
+    	/* handle images loading to resize view to correct size */
     	var images = _container.querySelectorAll('img');
     	var count = images.length;
-    	console.log("Count: ", count);
-    	if(count > 0)
+    	var _countImage = function() {
+			count--;
+			if(count <= 0)
+			{
+				[self setFrameSize:CGSizeMake(_container.offsetWidth, _container.offsetHeight)];
+			}
+		}
+    	if(images.length > 0)
     	{
-    		var loaded = 0;
-    		for(var i = 0; i < count; i++)
+    		for(var i = 0; i < images.length; i++)
     		{
-    			images[i].addEventListener('load', function() {
-    				loaded++;
-    				console.log("Loaded: ", loaded);
-    				if(loaded == count)
-    				{
-    					console.log("all images are loaded");
-    					[self setFrameSize:CGSizeMake(_container.offsetWidth, _container.offsetHeight)];
-    				}
-    			}, false);
-    			images[i].addEventListener('error', function() {
-    				loaded++;
-    				console.log("Error: ", loaded);
-    				if(loaded == count)
-    				{
-    					console.log("all images are loaded");
-    					[self setFrameSize:CGSizeMake(_container.offsetWidth, _container.offsetHeight)];
-    				}
-    			}, false);
+    			images[i].addEventListener('load', _countImage, false);
+    			images[i].addEventListener('error', _countImage, false);
     		}
     	}
     }

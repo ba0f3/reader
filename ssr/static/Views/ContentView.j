@@ -45,15 +45,29 @@
         [starButton setTarget:self];
         [starButton setEnabled:YES];
 
+        var shareButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
+        [shareButton addItemWithTitle:nil];
+        [[shareButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/share.png" size:CGSizeMake(22, 22)]];
+        [shareButton setImagePosition:CPImageOnly];
+        [shareButton setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset"];
+        [shareButton setPullsDown:YES];
+        [shareButton setTarget:self];
+        [shareButton setEnabled:YES];
+        [shareButton addItemsWithTitles: [CPArray arrayWithObjects:
+                    @"Facebook",
+                    @"Twitter",
+                    nil]
+        ];
+
         var fullscreenButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
         [fullscreenButton setBordered:NO];
         [fullscreenButton setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/fullscreen.png" size:CGSizeMake(16, 16)]];
         [fullscreenButton setImagePosition:CPImageOnly];
-        [fullscreenButton setAction:@selector(remove:)];
+        [fullscreenButton setAction:@selector(toggleFullscreenMode:)];
         [fullscreenButton setTarget:self];
         [fullscreenButton setEnabled:YES];
 
-        [buttonBar setButtons:[fullscreenButton, starButton]];
+        [buttonBar setButtons:[fullscreenButton, starButton, shareButton]];
         [buttonBar setAutoresizingMask:CPViewWidthSizable | CPViewMinXMargin | CPViewMinYMargin];
 
     }
@@ -85,7 +99,7 @@
         [welcomeMessage setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [self addSubview:welcomeMessage];
 
-        var first = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, CGRectGetHeight([scrollView bounds])/2 - 50, CGRectGetWidth([scrollView bounds]), 200.0)];
+        var first = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, CGRectGetHeight([welcomeMessage bounds])/2 - 50, CGRectGetWidth([welcomeMessage bounds]), 200.0)];
         [first setStringValue:@"Welcome to Doda Reader"];
         [first setAutoresizingMask:CPViewWidthSizable | CPViewMaxXMargin | CPViewMinYMargin];
         [first setFont:[CPFont boldFontWithName:'Titillium Web' size:36 italic:YES]];
@@ -95,7 +109,7 @@
         [first setAlignment:CPCenterTextAlignment];
         [welcomeMessage addSubview:first];
 
-        var second = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, CGRectGetHeight([scrollView bounds])/2, CGRectGetWidth([scrollView bounds]), 200.0)];
+        var second = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, CGRectGetHeight([welcomeMessage bounds])/2, CGRectGetWidth([welcomeMessage bounds]), 200.0)];
         [second setStringValue:@"Please select an article to continue"];
         [second setAutoresizingMask:CPViewWidthSizable | CPViewMinXMargin | CPViewMinYMargin];
         [second setFont:[CPFont boldFontWithName:'Open Sans' size:16]];
@@ -113,7 +127,10 @@
 {
     if(!entryView)
     {
-        entryView = [[EntryView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([scrollView bounds]), CGRectGetHeight([scrollView bounds]))];
+        entryView = [[EntryView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]) - 26)];
+        [entryView setBackgroundColor:[CPColor colorWithHexString:"222"]];
+        [entryView setAutoresizingMask:CPViewWidthSizable];
+        //[self addSubview:entryView];
         [scrollView setDocumentView:entryView];
     }
     [scrollView setHidden:NO];
@@ -123,5 +140,10 @@
 - (CPButtonBar)getButtonBar
 {
     return buttonBar;
+}
+
+- (void)toggleFullscreenMode:(id)sender
+{
+    [entryView enterFullScreenMode];
 }
 @end

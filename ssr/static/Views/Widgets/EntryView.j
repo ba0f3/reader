@@ -65,7 +65,6 @@
 	{
 		var subview = subviews[i];
 		frame = CGRectUnion(frame, [subview frame]);
-		console.log(frame);
 	}
 	[self setFrameSize:CGSizeMake(CGRectGetWidth(frame), CGRectGetHeight(frame) + 20)];
 }

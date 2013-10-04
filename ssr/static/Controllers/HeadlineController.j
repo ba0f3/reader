@@ -20,12 +20,12 @@ var path = @"/api/headlines"
 
 - (void)loadHeadlines
 {
-	[ServerConnection get:path setDelegate:self];
+	[[ServerConnection alloc] postJSON:path withObject:nil setDelegate:self];
 }
 
 -(void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
 {
-	CPLog('connection:%@ didReceiveData:%@', connection, data);
+	CPLog('HeadlineController.connection:%@ didReceiveData:%@', connection, '[HIDDEN]');
 
 	var headlines = [CPMutableArray array];
 

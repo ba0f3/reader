@@ -20,12 +20,12 @@ var path = @"/api/category"
 
 - (void)loadCategories
 {
-	[ServerConnection get:path setDelegate:self];
+	[[ServerConnection alloc] postJSON:path withObject:nil setDelegate:self];
 }
 
 -(void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
 {
-	CPLog('connection:%@ didReceiveData:%@', connection, data);
+	CPLog('CategoryController.connection:%@ didReceiveData:%@', connection, '[HIDDEN]');
 
 	var categories = [CPMutableArray array];
 

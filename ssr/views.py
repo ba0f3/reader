@@ -1,42 +1,64 @@
 from flask import *
+from flask.ext.security import login_user, logout_user, current_user
+from flask.ext.babel import gettext
 from ssr import app, db, logger
-
-from flask.ext.login import login_required, login_user, logout_user, current_user
 from ssr.models import User
 from ssr.helpers import strip_html_tags
 
-@app.route('/')
-@login_required
+
+def make_error(message, error_code=0, status_code=500):
+    response = jsonify(error={'message': message, 'code': error_code})
+    response.status_code = status_code
+    return response
+
+@app.route('/', methods=['GET'])
 def index():
     template = 'index-debug.html' if app.debug is True else 'index.html'
-    return render_template(template, categories=current_user.categories)
+    return render_template(template)
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/openSession', methods=['POST'])
+def open_session():
+    if current_user.is_authenticated():
+        return jsonify(open=True, user=current_user.get_profile())
+    else:
+        return make_error(gettext('Unauthorized!'), 401, 401)
+
+
+
+@app.route('/login', methods=['POST'])
 def login():
-    error = None
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+    if request.json is None:
+        return make_error(gettext('Request method is not supported'), 400)
 
-        user = User.query.filter_by(username=username).first()
+    username = request.json['username'] if 'username' in request.json else None
+    password = request.json['password'] if 'username' in request.json else None
+    remember = request.json['remember'] if 'remember' in request.json else False
 
-        if user is None or user.check_password(password) is False:
-            error = 'Invalid username or password'
-        else:
-            login_user(user)
-            flash("Logged in successfully.")
-            return redirect(request.args.get("return") or url_for('.index'))
-    return render_template('login.html', error=error)
+    if username is None or password is None:
+        return make_error(gettext('Username and password are required!'))
 
-@app.route("/logout")
-@login_required
+    user = User.query.filter_by(username=username).first()
+    if user is None or user.check_password(password) is False:
+        return make_error(gettext('Invalid username or password!'))
+    else:
+        if login_user(user, remember):
+            return jsonify(login=True, authToken=user.get_auth_token(), user=user.get_profile())
+
+
+@app.route("/logout", methods=['POST'])
 def logout():
-    logout_user()
-    return redirect(url_for('.login'))
+    if current_user.is_authenticated():
+        logout_user()
+        return jsonify(logout=True)
+    else:
+        return make_error(gettext("User is not logged in!"))
 
-@app.route('/api/headlines')
-@login_required
+
+@app.route('/api/headlines', methods=['POST'])
 def get_headlines():
+    if current_user.is_authenticated() is False:
+        return make_error(gettext('Unauthorized!'), 401, 401)
+
     user_id = current_user.id
     headline_list = list()
     sql = """SELECT
@@ -53,7 +75,7 @@ def get_headlines():
             'id': row.id,
             'title': row.title,
             'site': row.site_url,
-            'intro': strip_html_tags(row.content).strip(), # TODO: tao intro ngay khi update feed
+            'intro': strip_html_tags(row.content).strip(),  # TODO: tao intro ngay khi update feed
             'unread': row.unread,
             'stared': row.stared,
         }
@@ -61,9 +83,11 @@ def get_headlines():
     return jsonify(count=len(headline_list), objects=headline_list)
 
 
-@app.route('/api/entry/<int:user_entry_id>')
-@login_required
+@app.route('/api/entry/<int:user_entry_id>', methods=['POST'])
 def get_entries(user_entry_id):
+    if current_user.is_authenticated() is False:
+        return make_error(gettext('Unauthorized!'), 401, 401)
+
     user_id = current_user.id
 
     sql = """SELECT
@@ -93,5 +117,5 @@ def get_entries(user_entry_id):
             'note': row.note,
         }
         return jsonify(objects=entry)
-    abort(404)
+    return make_error(gettext('Entry not found'), 404)
 

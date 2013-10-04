@@ -93,7 +93,7 @@
 
 - (void)onCategoryLoaded:(CPNotification)notification
 {
-    CPLog('onCategoryLoaded:%@', notification);
+    CPLog('NavigationView.onCategoryLoaded:%@', notification);
     var categories = [notification object];
     for(var i = 0; i < categories.length; i ++)
     {
@@ -106,7 +106,7 @@
 
 - (id)outlineView:(CPOutlineView)outlineView child:(int)index ofItem:(id)item
 {
-    CPLog("outlineView:%@ child:%@ ofItem:%@", outlineView, index, item);
+    CPLog("NavigationView.outlineView:%@ child:%@ ofItem:%@", outlineView, index, item);
 
     if (item === nil)
     {
@@ -122,7 +122,7 @@
 
 - (BOOL)outlineView:(CPOutlineView)outlineView isItemExpandable:(id)item
 {
-    CPLog("outlineView:%@ isItemExpandable:%@", outlineView, item);
+    CPLog("NavigationView.outlineView:%@ isItemExpandable:%@", outlineView, item);
 
     var values = [items objectForKey:item];
     return ([values count] > 0);
@@ -130,7 +130,7 @@
 
 - (int)outlineView:(CPOutlineView)outlineView numberOfChildrenOfItem:(id)item
 {
-    CPLog("outlineView:%@ numberOfChildrenOfItem:%@", outlineView, item);
+    CPLog("NavigationView.outlineView:%@ numberOfChildrenOfItem:%@", outlineView, item);
 
     if (item === nil)
     {
@@ -145,24 +145,26 @@
 
 - (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item
 {
-    CPLog("outlineView:%@ objectValueForTableColumn:%@ byItem:%@", outlineView, tableColumn, item);
+    CPLog("NavigationView.outlineView:%@ objectValueForTableColumn:%@ byItem:%@", outlineView, tableColumn, item);
     return item;
 }
 
 - (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item
 {
-	CPLog("outlineView:%@ shouldExpandItem:%@", outlineView, item);
+	CPLog("NavigationView.outlineView:%@ shouldExpandItem:%@", outlineView, item);
 	return YES;
 }
 
 - (void)outlineView:(CPOutlineView)outlineView willDisplayView:(id)dataView forTableColumn:(CPTableColumn)tableColumn item:(id)item
 {
-	CPLog("outlineView:%@ willDisplayView:%@ forTableColumn:%@ item:%@", outlineView, dataView, tableColumn, item);
+	CPLog("NavigationView.outlineView:%@ willDisplayView:%@ forTableColumn:%@ item:%@", outlineView, dataView, tableColumn, item);
 	if([item className] == 'Feed')
 	{
 		[dataView setStringValue:[item name]];
 	}
 }
-
-//[items setValue:[] forKey:@"Test"];
+- (BOOL)outlineView:(CPOutlineView)outlineView shouldSelectTableColumn:(CPTableColumn)tableColumn;
+{
+	CPLog("NavigationView.outlineView:%@ shouldSelectTableColumn:%@", outlineView, tableColumn);
+}
 @end

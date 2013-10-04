@@ -1,7 +1,9 @@
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask.ext.login import current_user
+from flask.ext.security import UserMixin, RoleMixin
 from ssr import app, db, logger
+import ssr.configs
 from ssr.helpers import html_sanitizer
 import datetime
 import hashlib
@@ -83,6 +85,7 @@ class Entry(db.Model):
     def hash_content(content):
         return hashlib.sha224(content.encode('ascii', 'ignore')).hexdigest()
 
+
 class UserEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -110,8 +113,18 @@ class Tag(db.Model):
         self.user_entry_id = user_entry_id
         self.name = name
 
+roles_users = db.Table('roles_users',
+                       db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+                       db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
 
-class User(db.Model):
+
+class Role(db.Model, RoleMixin):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
@@ -121,21 +134,22 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     full_name = db.Column(db.String(255))
     created = db.Column(db.DateTime)
+    locale = db.Column(db.String(10))
+    timezone = db.Column(db.String(50))
     categories = relationship("Category")
     user_feeds = relationship("UserFeed")
+    roles = db.relationship('Role', secondary=roles_users,
+                            backref=db.backref('users', lazy='dynamic'))
 
     def __init__(self, username, password, email, active=True, full_name=None, access_level = 1):
         self.username = username
-        if(password is not None):
+        if password is not None:
             self.set_password(password)
         self.email = email
         self.full_name = full_name
         self.active = active
         self.access_level = access_level
         self.created = datetime.datetime.now()
-
-    def get(self, uid):
-        return User.query.get(uid)
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -146,11 +160,17 @@ class User(db.Model):
     def is_authenticated(self):
         return self.id == current_user.id
 
-    def is_active(self):
-        return self.active == 1
-
-    def is_anonymous(self):
-        return False
-
     def get_id(self):
         return unicode(self.id)
+
+    def get_profile(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'last_login': self.last_login,
+            'email': self.email,
+            'full_name': self.full_name,
+            'locale': self.locale,
+            'timezone': self.timezone
+        }
+

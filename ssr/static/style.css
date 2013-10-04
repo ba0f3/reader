@@ -47,3 +47,8 @@
 .CPHtmlView pre,.CPHtmlView code,.CPHtmlView tt{font:1em monospace;line-height:1.5}
 .CPHtmlView tt{display:block;margin:1.625em 0}
 .CPHtmlView hr{margin-bottom:1.625em}
+
+
+body {
+	background-color: #222;
+}

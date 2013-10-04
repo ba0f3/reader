@@ -4,12 +4,11 @@ from flask import Flask, request
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
-from flask.ext.restless import APIManager
+#from flask.ext.restless import APIManager
 from flask.ext.security import Security, SQLAlchemyUserDatastore, current_user
 from flask.ext.babel import Babel
 import logging
 import ssr.configs
-import socket
 
 # Create app
 app = Flask(__name__)
@@ -65,8 +64,8 @@ manager.add_command('dev', DevelCommand)
 
 
 # Create the Flask-Restless API manager.
-api_manager = APIManager(app, flask_sqlalchemy_db=db)
-api_manager.create_api(Category, methods=['GET', 'POST', 'DELETE'])
+#api_manager = APIManager(app, flask_sqlalchemy_db=db)
+#api_manager.create_api(Category, methods=['GET', 'POST', 'DELETE'])
 #api_manager.create_api(UserEntry, methods=['GET'])
 
 

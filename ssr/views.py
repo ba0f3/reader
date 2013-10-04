@@ -2,7 +2,7 @@ from flask import *
 from flask.ext.security import login_user, logout_user, current_user
 from flask.ext.babel import gettext
 from ssr import app, db, logger
-from ssr.models import User
+from ssr.models import User, Category
 from ssr.helpers import strip_html_tags
 
 
@@ -53,6 +53,43 @@ def logout():
     else:
         return make_error(gettext("User is not logged in!"))
 
+@app.route('/api/categories', methods=['POST'])
+def get_categories():
+    if current_user.is_authenticated() is False:
+        return make_error(gettext('Unauthorized!'), 401, 401)
+
+    user_id = current_user.id
+
+    category_list = list()
+    category_ids = list()
+    categories = Category.query.filter_by(user_id=user_id).all()
+
+    for category in categories:
+        category_list.append({
+            'id': category.id,
+            'name': category.name,
+            'order_id': category.order_id,
+            'parent_id': category.parent_id})
+        category_ids.append(category.id)
+
+    sql = """SELECT uf.id, uf.category_id, uf.name, uf.order_id, f.site_url
+    FROM user_feed AS uf
+    LEFT JOIN feed AS f ON f.id = uf.feed_id
+    WHERE uf.category_id IN (%s)
+    """ % (', '.join(str(x) for x in category_ids))
+
+    feed_list = list()
+    rows = db.engine.execute(sql)
+    for row in rows:
+        feed_list.append({
+            'id': row.id,
+            'name': row.name,
+            'category_id': row.category_id,
+            'order_id': row.order_id,
+            'sile_url': row.site_url})
+
+    return jsonify(categories=category_list, feeds=feed_list)
+
 
 @app.route('/api/headlines', methods=['POST'])
 def get_headlines():
@@ -99,10 +136,9 @@ def get_entries(user_entry_id):
         WHERE ue.user_id = %s
         AND ue.id = %s
         LIMIT 1""" % (user_id, user_entry_id)
-    logger.debug(sql)
     rows = db.engine.execute(sql)
+    #FIXME: how to get single result???
     for row in rows:
-        print row
         entry = {
             'id': row.id,
             'title': row.title,

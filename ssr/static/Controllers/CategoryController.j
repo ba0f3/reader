@@ -3,7 +3,7 @@
 @import "../Models/Category.j"
 
 
-var path = @"/api/category"
+var path = @"/api/categories"
 @implementation CategoryController : CPObject
 {
 }
@@ -30,8 +30,23 @@ var path = @"/api/category"
 	var categories = [CPMutableArray array];
 
 	data = JSON.parse(data);
-	for (var i = 0; i < data.objects.length; i++) {
-		var category = [[Category alloc] initFromObject:data.objects[i]];
+	var feed_arrays = [];
+
+	for (var i = 0; i < data.feeds.length; i++) {
+		var catid = data.feeds[i].category_id;
+
+		if(feed_arrays[catid] == undefined)
+		{
+			feed_arrays[catid] = [];
+		}
+		var feed = [[Feed alloc] initFromObject:data.feeds[i]];
+		feed_arrays[catid].push(feed);
+	}
+
+	for (var i = 0; i < data.categories.length; i++) {
+		var catid = data.categories[i].id;
+		data.categories[i].feeds = feed_arrays[catid];
+		var category = [[Category alloc] initFromObject:data.categories[i]];
 		[categories addObject:category];
 	}
 	[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:categories];

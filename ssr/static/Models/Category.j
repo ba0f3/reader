@@ -20,9 +20,9 @@
 		[self setParent:obj.parent_id];
 
 		feeds = [CPMutableArray array];
-		for(var i = 0; i < obj.user_feeds.length; i++)
+		for(var i = 0; i < obj.feeds.length; i++)
 		{
-			var uf = [[Feed alloc] initFromObject:obj.user_feeds[i]];
+			var uf = [[Feed alloc] initFromObject:obj.feeds[i]];
 			[feeds addObject:uf];
 		}
 	}

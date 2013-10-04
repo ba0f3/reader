@@ -18,7 +18,7 @@ var path = @"/api/entry/%s"
 
 - (void)loadEntry:(int)entryId
 {
-	[ServerConnection get:[CPString stringWithFormat:path,entryId] setDelegate:self];
+	[[ServerConnection alloc] postJSON:[CPString stringWithFormat:path,entryId] withObject:nil setDelegate:self];
 }
 
 -(void)connection:(CPURLConnection)connection didReceiveData:(CPString)data

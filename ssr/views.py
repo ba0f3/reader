@@ -144,7 +144,6 @@ def get_headlines():
         WHERE %s \
         ORDER BY %s \
         LIMIT 20" % (' '.join(extra_joins), ' AND '.join(filters), order_by)
-    print sql
     rows = db.engine.execute(sql)
 
     for row in rows:

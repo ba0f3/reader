@@ -1,4 +1,5 @@
 @import <AppKit/CPView.j>
+@import "../Controllers/HeadlineController.j"
 @import "Widgets/HeadlineTableView.j"
 @import "Widgets/HeadlineItemView.j"
 @import "Widgets/CPFaviconView.j"
@@ -9,6 +10,7 @@ var HeadlineItemViewWidth = 200.0,
 
 @implementation HeadlineView : CPView
 {
+    HeadlineController headlineController @accessors(readonly);
     HeadlineTableView tableView;
     CPArray data;
 
@@ -20,6 +22,9 @@ var HeadlineItemViewWidth = 200.0,
     if (self)
     {
         [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onHeadlineLoaded:) name:NOTIFICATION_HEADLINE_LOADED object:nil];
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onUserLoggedIn:) name:NOTIFICATION_USER_LOGGED_IN object:nil];
+
+        headlineController = [[HeadlineController alloc] init];
 
         data = [[CPArray alloc] init];
 
@@ -90,6 +95,12 @@ var HeadlineItemViewWidth = 200.0,
     }
     [tableView reloadData];
 
+}
+
+- (void)onUserLoggedIn:(CPNotification)notification
+{
+    CPLog('HeadlineView.onUserLoggedIn:%@', notification);
+    [headlineController loadHeadlines];
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)aTableView {

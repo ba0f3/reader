@@ -1,16 +1,22 @@
 @import <AppKit/CPView.j>
-@import "Widgets/FolderItemView.j"
 @import "../Constants.j"
+@import "../Controllers/CategoryController.j"
+@import "Widgets/FolderItemView.j"
 
 @implementation NavigationView : CPView
 {
 	CPDictionary items @accessors;
 	CPOutlineView _outlineView;
+
+	CategoryController categoryController @accessors(readonly);
 }
 
 - (void)initWithFrame:(CGRect)aFrame
 {
 	[[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onCategoryLoaded:) name:NOTIFICATION_CATEGORY_LOADED object:nil];
+	[[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onUserLoggedIn:) name:NOTIFICATION_USER_LOGGED_IN object:nil];
+
+	categoryController = [[CategoryController alloc] init];
 
 	items = [CPDictionary dictionaryWithObjects:[[@"Android", @"Ubuntu", @"Linux"], [@"Unread", @"Favorites", @"Archives"]] forKeys:[@"Labels", @"All Feeds"]];
 	self = [super initWithFrame:aFrame];
@@ -102,6 +108,12 @@
     }
     [_outlineView reloadData];
 
+}
+
+- (void)onUserLoggedIn:(CPNotification)notification
+{
+    CPLog('NavigationView.onUserLoggedIn:%@', notification);
+    [categoryController loadCategories];
 }
 
 - (id)outlineView:(CPOutlineView)outlineView child:(int)index ofItem:(id)item

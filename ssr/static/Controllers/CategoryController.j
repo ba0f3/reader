@@ -11,9 +11,9 @@ var path = @"/api/categories"
 - (id)init
 {
 	self = [super init];
-	if(self)
+	//if(self)
 	{
-		[self loadCategories];
+
 	}
 	return self;
 }

@@ -11,9 +11,8 @@ var path = @"/api/headlines"
 - (id)init
 {
 	self = [super init];
-	if(self)
+	//if(self)
 	{
-		[self loadHeadlines];
 	}
 	return self;
 }

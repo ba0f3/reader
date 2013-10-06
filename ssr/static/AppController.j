@@ -1,8 +1,6 @@
 @import <Foundation/CPObject.j>
 
 @import "Constants.j"
-@import "Controllers/CategoryController.j"
-@import "Controllers/HeadlineController.j"
 @import "Views/ContentView.j"
 @import "Views/HeadlineView.j"
 @import "Views/NavigationView.j"
@@ -23,9 +21,6 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier";
     ContentView contentArea;
     CPView contentView
     CPSplitView verticalSplitter;
-    CategoryController categoryController @accessors(readonly);
-    HeadlineController headlineController @accessors(readonly);
-
     CPWindow theWindow
 }
 
@@ -61,9 +56,6 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier";
     User = [[User alloc] initFromObject:[notification object]];
 
     [theWindow orderFront:self];
-
-    categoryController = [[CategoryController alloc] init];
-    headlineController = [[HeadlineController alloc] init];
 }
 
 - (void)onUserLoggedOut:(CPNotification)notification

@@ -5,10 +5,19 @@
 
 var path = @"/api/headlines",
 	headlineControllerSharedInstance;
+
+RSSHeadlineOrderByNewestFirst = 0;
+RSSHeadlineOrderByOldestFirst = 1;
+RSSHeadlineOrderByTitle = 2;
+
 @implementation HeadlineController : CPArrayController
 {
 	int selectedCategory;
 	int selectedFeed;
+	CPDate lastTimestamp;
+	int orderMode @accessors;
+	BOOL isPrefetching
+
 }
 
 + (HeadlineController)sharedHeadlineController
@@ -28,8 +37,8 @@ var path = @"/api/headlines",
 	self = [super init];
 	if(self)
 	{
-		selectedCategory = 0;
-		selectedFeed = 0
+		orderMode = RSSHeadlineOrderByNewestFirst;
+		[self reset];
 	}
 	return self;
 }
@@ -37,16 +46,34 @@ var path = @"/api/headlines",
 - (void)onCategorySelected:(CPNotification)notification
 {
     CPLog('HeadlineController.onCategorySelected:%@', notification);
+    [self reset];
 }
 
 - (void)onFeedSelected:(CPNotification)notification
 {
     CPLog('HeadlineController.onFeedSelected:%@', notification);
+    [self reset];
+}
+
+- (void)reset
+{
+	[self setContent:[CPArray array]];
+	selectedCategory = 0;
+	selectedFeed = 0;
+	lastTimestamp = 0;
+	isPrefetching = NO;
+
 }
 
 - (void)loadHeadlines
 {
-	[[ServerConnection alloc] postJSON:path withObject:nil setDelegate:self];
+	var data = {
+		'orderMode': orderMode,
+		'lastTimestamp': [lastTimestamp timeIntervalSince1970],
+		'feed': selectedFeed,
+		'category': selectedCategory
+	}
+	[[ServerConnection alloc] postJSON:path withObject:data setDelegate:self];
 }
 
 - (int)count
@@ -59,6 +86,17 @@ var path = @"/api/headlines",
 	return [[self arrangedObjects] objectAtIndex:rowIndex];
 }
 
+- (void)prefetchHeadlines:(int)rowIndex
+{
+	if(isPrefetching) return; // a request is in progress, ignore other
+
+	if(rowIndex + 3 >= [self count])
+	{
+		isPrefetching = YES;
+		[self loadHeadlines];
+	}
+}
+
 -(void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
 {
 	CPLog('HeadlineController.connection:%@ didReceiveData:%@', connection, '[HIDDEN]');
@@ -66,10 +104,16 @@ var path = @"/api/headlines",
 	var headlines = [CPMutableArray array];
 
 	data = JSON.parse(data);
+	var headline;
 	for (var i = 0; i < data.count; i++) {
-		var headline = [[Headline alloc] initFromObject:data.objects[i]];
+		headline = [[Headline alloc] initFromObject:data.objects[i]];
 		[self addObject:headline];
 	}
+	lastTimestamp = [headline created];
+	delete headline;
+
+	if(isPrefetching) isPrefetching = NO; // release lock
+
 	[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_LOADED object:nil];
 }
 @end

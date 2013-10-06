@@ -30,6 +30,7 @@ var HeadlineItemViewWidth = 200.0,
         [scrollView setHasHorizontalScroller:NO];
         [scrollView setHasVerticalScroller:YES]; 
         [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+        [scrollView setDelegate:self];
 
         tableView = [[HeadlineTableView alloc] initWithFrame:[scrollView bounds]];
         [tableView setHeaderView:nil];
@@ -99,11 +100,14 @@ var HeadlineItemViewWidth = 200.0,
 }
 
 - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex {
+    CPLog('HeadlineView.tableView:%@ objectValueForTableColumn:%@ row:%@', aTableView, aTableColumn, rowIndex);
+    [[HeadlineController sharedHeadlineController] prefetchHeadlines:rowIndex];
     return [[HeadlineController sharedHeadlineController] objectAtIndex:rowIndex];
 }
 
 - (void)tableView:(CPTableView)aTableView viewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
 {
+    CPLog('HeadlineView.tableView:%@ viewForTableColumn:%@ row:%@', aTableView, aTableColumn, aRow);
     var identifier = [aTableColumn identifier];
 
     if (identifier == @"multiple")
@@ -127,6 +131,7 @@ var HeadlineItemViewWidth = 200.0,
 
 - (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
 {
+    CPLog('HeadlineView.tableView:%@ shouldSelectRow:%@', aTableView, rowIndex);
     CPLog("tableView:%@ shouldSelectRow:%@", aTableView, rowIndex);
     var headline = [[HeadlineController sharedHeadlineController] objectAtIndex:rowIndex];
     [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_SELECTED object:headline.id];

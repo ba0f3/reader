@@ -7,7 +7,7 @@
 	CPString link @accessors;
 	CPString site @accessors;
 	CPString content @accessors;
-	CPString published @accessors;
+	CPDate published @accessors;
 	CPString author @accessors;
 	CPString comments @accessors;
 	BOOL unread @accessors;
@@ -24,7 +24,7 @@
 		[self setLink:obj.link];
 		[self setSite:obj.site];
 		[self setContent:obj.content];
-		[self setPublished:obj.published];
+		[self setPublished:[[CPDate alloc] initWithTimeIntervalSince1970:obj.published]];
 		[self setAuthor:obj.author];
 		[self setComments:obj.comments];
 		[self setUnread:obj.unread];

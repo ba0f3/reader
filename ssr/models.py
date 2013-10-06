@@ -65,11 +65,12 @@ class Entry(db.Model):
     content = db.Column(db.Text, nullable=False)
     content_hash = db.Column(db.String(56))
     published = db.Column(db.DateTime, nullable=False)
+    created = db.Column(db.DateTime, nullable=False)
     author = db.Column(db.String(255))
     comments = db.Column(db.String(255))
     feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'))
 
-    def __init__(self, feed_id, title, link, uuid, content, published, author=None, comments=None):
+    def __init__(self, feed_id, title, link, uuid, content, published, author=None, comments=None, created=None):
         content = html_sanitizer(content)
         self.feed_id = feed_id
         self.title = title
@@ -80,6 +81,7 @@ class Entry(db.Model):
         self.published = published
         self.author = author
         self.comments = comments
+        self.created = created if created is not None else datetime.datetime.now()
 
     @staticmethod
     def hash_content(content):
@@ -93,13 +95,15 @@ class UserEntry(db.Model):
     user_feed_id = db.Column(db.Integer, db.ForeignKey('user_feed.id'))
     unread = db.Column(db.Boolean, default=True)
     stared = db.Column(db.Boolean, default=False)
+    created = db.Column(db.DateTime, nullable=False)
     note = db.Column(db.Text)
 
-    def __init__(self, user_id, entry_id, user_feed_id, note=None):
+    def __init__(self, user_id, entry_id, user_feed_id, note=None, created=None):
         self.user_id = user_id
         self.entry_id = entry_id
         self.user_feed_id = user_feed_id
         self.note = note
+        self.created = created if created is not None else datetime.datetime.now()
 
 
 class Tag(db.Model):

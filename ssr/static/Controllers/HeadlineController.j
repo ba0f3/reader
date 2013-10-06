@@ -14,7 +14,7 @@ RSSHeadlineOrderByTitle = 2;
 {
 	int selectedCategory;
 	int selectedFeed;
-	CPDate lastTimestamp;
+	int lastTimestamp;
 	int orderMode @accessors;
 	BOOL isPrefetching
 
@@ -47,12 +47,16 @@ RSSHeadlineOrderByTitle = 2;
 {
     CPLog('HeadlineController.onCategorySelected:%@', notification);
     [self reset];
+    selectedCategory = [notification object];
+    [self loadHeadlines];
 }
 
 - (void)onFeedSelected:(CPNotification)notification
 {
     CPLog('HeadlineController.onFeedSelected:%@', notification);
     [self reset];
+    selectedFeed = [notification object];
+    [self loadHeadlines];
 }
 
 - (void)reset
@@ -109,7 +113,7 @@ RSSHeadlineOrderByTitle = 2;
 		headline = [[Headline alloc] initFromObject:data.objects[i]];
 		[self addObject:headline];
 	}
-	lastTimestamp = [headline created];
+	lastTimestamp = [[headline created] timeIntervalSince1970];
 	delete headline;
 
 	if(isPrefetching) isPrefetching = NO; // release lock

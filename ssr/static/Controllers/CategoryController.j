@@ -3,17 +3,29 @@
 @import "../Models/Category.j"
 
 
-var path = @"/api/categories";
+var path = @"/api/categories",
+	categoryControllerSharedInstance;
 @implementation CategoryController : CPObject
 {
+	CPMutableArray categories @accessors(readonly);
 }
+
++ (CategoryController)sharedCategoryController
+{
+    if (categoryControllerSharedInstance == nil)
+    {
+        categoryControllerSharedInstance = [[CategoryController alloc] init];
+    }
+    return categoryControllerSharedInstance;
+}
+
 
 - (id)init
 {
 	self = [super init];
-	//if(self)
+	if(self)
 	{
-
+		categories = [CPMutableArray array];
 	}
 	return self;
 }
@@ -26,8 +38,6 @@ var path = @"/api/categories";
 -(void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
 {
 	CPLog('CategoryController.connection:%@ didReceiveData:%@', connection, '[HIDDEN]');
-
-	var categories = [CPMutableArray array];
 
 	data = JSON.parse(data);
 	var feed_arrays = [];
@@ -49,6 +59,6 @@ var path = @"/api/categories";
 		var category = [[Category alloc] initFromObject:data.categories[i]];
 		[categories addObject:category];
 	}
-	[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:categories];
+	[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
 }
 @end

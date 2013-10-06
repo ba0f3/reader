@@ -2,6 +2,7 @@
 @import "../Constants.j"
 @import "../Controllers/CategoryController.j"
 @import "Widgets/FolderItemView.j"
+@import "Widgets/CategoryHeader.j"
 
 var SpecialFoldersViewHeight = 110.0;
 @implementation NavigationView : CPView
@@ -9,8 +10,6 @@ var SpecialFoldersViewHeight = 110.0;
 	CPDictionary specialFolders @accessors;
 	CPOutlineView _specialFoldersViews;
 	CPOutlineView _categoriesViews;
-
-	CategoryController categoryController @accessors(readonly);
 }
 
 - (void)initWithFrame:(CGRect)aFrame
@@ -41,13 +40,26 @@ var SpecialFoldersViewHeight = 110.0;
 	    [_specialFoldersViews expandItem:@"Special"];
 	    [self addSubview:_specialFoldersViews];
 
-		var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, SpecialFoldersViewHeight, 200.0, CGRectGetHeight([self bounds]) - SpecialFoldersViewHeight - 26.0)];
+	    var smartFolderIcon = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 16.0, 16.0)];
+	    [smartFolderIcon setBordered:NO];
+	    [smartFolderIcon setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/smart-folder.png" size:CGSizeMake(16, 16)]];
+	    [smartFolderIcon setImagePosition:CPImageOnly];
+	    [smartFolderIcon setEnabled:NO];
+
+	    [_specialFoldersViews setDisclosureControlPrototype:smartFolderIcon];
+
+	    var categoryHeader = [[CategoryHeader alloc] initWithFrame:CGRectMake(0.0, SpecialFoldersViewHeight, 200.0, 26.0)]
+	    [self addSubview:categoryHeader];
+
+		var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, SpecialFoldersViewHeight+26.0, 200.0, CGRectGetHeight([self bounds]) - SpecialFoldersViewHeight - 52.0)];
 	    [scrollView setBackgroundColor:[CPColor colorWithHexString:@"e0ecfa"]];
 	    [scrollView setAutohidesScrollers:YES];
 	    [scrollView setHasHorizontalScroller:NO];
 	    [scrollView setHasVerticalScroller:YES]; 
 	    [scrollView setAutoresizingMask:CPViewHeightSizable];
 	    [self addSubview:scrollView];
+
+
 
 	    _categoriesViews = [[CPOutlineView alloc] initWithFrame:[scrollView bounds]];
 	    [_categoriesViews setHeaderView:nil];
@@ -59,8 +71,6 @@ var SpecialFoldersViewHeight = 110.0;
 	    [_categoriesViews setDataSource:self];
 
 	    [scrollView setDocumentView:_categoriesViews];
-
-
 
 	    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight([self bounds]) - 26.0, CGRectGetWidth([self bounds]), 26.0)]; //you need to use your own frame obviously
 	    [buttonBar setHasResizeControl:NO];
@@ -106,58 +116,89 @@ var SpecialFoldersViewHeight = 110.0;
 - (void)onCategoryLoaded:(CPNotification)notification
 {
     CPLog('NavigationView.onCategoryLoaded:%@', notification);
-    var categories = [notification object];
-    for(var i = 0; i < categories.length; i ++)
-    {
-    	var category = categories[i];
-    	[specialFolders setObject:[category feeds] forKey:[category name]]
-    }
-    [_specialFoldersViews reloadData];
-
+    [_categoriesViews reloadData];
 }
 
 - (void)onUserLoggedIn:(CPNotification)notification
 {
     CPLog('NavigationView.onUserLoggedIn:%@', notification);
-    [categoryController loadCategories];
+    [[CategoryController sharedCategoryController] loadCategories];
 }
 
 - (id)outlineView:(CPOutlineView)outlineView child:(int)index ofItem:(id)item
 {
     CPLog("NavigationView.outlineView:%@ child:%@ ofItem:%@", outlineView, index, item);
-
-    if (item === nil)
+    if(outlineView == _specialFoldersViews)
     {
-        var keys = [specialFolders allKeys];
-        return [keys objectAtIndex:index];
-    }
-    else
-    {
-        var values = [specialFolders objectForKey:item];
-        return [values objectAtIndex:index];
-    }
+	    if (item === nil)
+	    {
+	        var keys = [specialFolders allKeys];
+	        return [keys objectAtIndex:index];
+	    }
+	    else
+	    {
+	        var values = [specialFolders objectForKey:item];
+	        return [values objectAtIndex:index];
+	    }
+	}
+	else
+	{
+		if (item === nil)
+	    {
+	    	var sharedCategoryController = [CategoryController sharedCategoryController];
+	    	var keys = [sharedCategoryController categories];
+	        return [keys objectAtIndex:index];
+	    }
+	    else
+	    {
+	        return [[item feeds] objectAtIndex:index];
+	    }
+	}
 }
 
 - (BOOL)outlineView:(CPOutlineView)outlineView isItemExpandable:(id)item
 {
     CPLog("NavigationView.outlineView:%@ isItemExpandable:%@", outlineView, item);
-    var values = [specialFolders objectForKey:item];
-    return ([values count] > 0);
+    if(outlineView == _specialFoldersViews)
+    {
+    	var values = [specialFolders objectForKey:item];
+    	return ([values count] > 0);
+    }
+    else
+    {
+    	if([item className] == 'Category') return YES;
+    	if([item className] == 'Feed') return NO;
+    }
 }
 
 - (int)outlineView:(CPOutlineView)outlineView numberOfChildrenOfItem:(id)item
 {
     CPLog("NavigationView.outlineView:%@ numberOfChildrenOfItem:%@", outlineView, item);
-
-    if (item === nil)
+	if(outlineView == _specialFoldersViews)
     {
-        return [specialFolders count];
-    }
-    else
-    {
-        var values = [specialFolders objectForKey:item];
-        return [values count];
-    }
+	    if (item === nil)
+	    {
+	        return [specialFolders count];
+	    }
+	    else
+	    {
+	        var values = [specialFolders objectForKey:item];
+	        return [values count];
+	    }
+	}
+	else
+	{
+		if (item === nil)
+	    {
+	    	var sharedCategoryController = [CategoryController sharedCategoryController];
+	        return [[sharedCategoryController categories] count];
+	    }
+	    else
+	    {
+	        var values = [item feeds];
+	        return [values count];
+	    }
+	}
 }
 
 - (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item
@@ -173,22 +214,49 @@ var SpecialFoldersViewHeight = 110.0;
 	return YES;
 }
 
-/*- (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item
-{
-	CPLog("NavigationView.outlineView:%@ shouldExpandItem:%@", outlineView, item);
-	return YES;
-}*/
-
 - (void)outlineView:(CPOutlineView)outlineView willDisplayView:(id)dataView forTableColumn:(CPTableColumn)tableColumn item:(id)item
 {
 	CPLog("NavigationView.outlineView:%@ willDisplayView:%@ forTableColumn:%@ item:%@", outlineView, dataView, tableColumn, item);
-	if([item className] == 'Feed')
-	{
-		[dataView setStringValue:[item name]];
-	}
+	if(outlineView == _specialFoldersViews)
+    {
+    }
+    else
+    {
+    	if([item className] == 'Category')
+    	{
+    		[dataView setStringValue:[item name]];
+    	}
+	    if([item className] == 'Feed')
+		{
+			[dataView setStringValue:[item name]];
+		}
+    }
+
 }
 - (BOOL)outlineView:(CPOutlineView)outlineView shouldSelectTableColumn:(CPTableColumn)tableColumn;
 {
 	CPLog("NavigationView.outlineView:%@ shouldSelectTableColumn:%@", outlineView, tableColumn);
+}
+
+- (BOOL)outlineView:(CPOutlineView)outlineView shouldSelectItem:(id)item
+{
+	CPLog("NavigationView.outlineView:%@ shouldSelectItem:%@", outlineView, item);
+	if(outlineView == _specialFoldersViews)
+    {
+    	if(item == @"Special")  return NO;
+    }
+    else
+    {
+		if([item className] == 'Category')
+		{
+			[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_SELECTED object:item.id];
+
+		}
+	    else if([item className] == 'Feed')
+		{
+			[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_FEED_SELECTED object:item.id];
+		}
+	}
+	return YES;
 }
 @end

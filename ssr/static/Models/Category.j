@@ -20,10 +20,13 @@
 		[self setParent:obj.parent_id];
 
 		feeds = [CPMutableArray array];
-		for(var i = 0; i < obj.feeds.length; i++)
+		if(obj.feeds)
 		{
-			var uf = [[Feed alloc] initFromObject:obj.feeds[i]];
-			[feeds addObject:uf];
+			for(var i = 0; i < obj.feeds.length; i++)
+			{
+				var uf = [[Feed alloc] initFromObject:obj.feeds[i]];
+				[feeds addObject:uf];
+			}
 		}
 	}
 	return self;

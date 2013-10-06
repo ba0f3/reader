@@ -76,7 +76,7 @@ def get_categories():
             'parent_id': category.parent_id})
         category_ids.append(category.id)
 
-    sql = """SELECT uf.id, uf.category_id, uf.name, uf.order_id, f.site_url
+    sql = """SELECT f.id, uf.category_id, uf.name, uf.order_id, f.site_url
     FROM user_feed AS uf
     LEFT JOIN feed AS f ON f.id = uf.feed_id
     WHERE uf.category_id IN (%s)
@@ -121,7 +121,7 @@ def get_headlines():
         extra_joins.append("INNER JOIN user_feed AS uf ON uf.id = ue.user_feed_id")
         filters.append("uf.category_id = %s" % category)
     elif feed > 0:
-        filters.append("ue.feed_id = %s" % feed)
+        filters.append("e.feed_id = %s" % feed)
 
     if last_timestamp > 0:
         if order_mode == RSSHeadlineOrderByNewestFirst:  

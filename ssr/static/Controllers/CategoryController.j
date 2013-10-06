@@ -3,7 +3,7 @@
 @import "../Models/Category.j"
 
 
-var path = @"/api/categories"
+var path = @"/api/categories";
 @implementation CategoryController : CPObject
 {
 }

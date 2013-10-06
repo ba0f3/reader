@@ -10,9 +10,7 @@ var HeadlineItemViewWidth = 200.0,
 
 @implementation HeadlineView : CPView
 {
-    HeadlineController headlineController @accessors(readonly);
     HeadlineTableView tableView;
-    CPArray data;
 
 }
 
@@ -24,9 +22,8 @@ var HeadlineItemViewWidth = 200.0,
         [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onHeadlineLoaded:) name:NOTIFICATION_HEADLINE_LOADED object:nil];
         [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onUserLoggedIn:) name:NOTIFICATION_USER_LOGGED_IN object:nil];
 
-        headlineController = [[HeadlineController alloc] init];
-
-        data = [[CPArray alloc] init];
+        // init notification register
+        [HeadlineController sharedHeadlineController];
 
         var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]) - 26.0)];
         [scrollView setAutohidesScrollers:YES];
@@ -86,13 +83,7 @@ var HeadlineItemViewWidth = 200.0,
 
 - (void)onHeadlineLoaded:(CPNotification)notification
 {
-    CPLog('onHeadlineLoaded:%@', notification);
-    var headlines = [notification object];
-    for(var i = 0; i < headlines.length; i ++)
-    {
-        var headline = headlines[i];
-        [data addObject:headline];
-    }
+    CPLog('HeadlineView.onHeadlineLoaded:%@', notification);
     [tableView reloadData];
 
 }
@@ -100,15 +91,15 @@ var HeadlineItemViewWidth = 200.0,
 - (void)onUserLoggedIn:(CPNotification)notification
 {
     CPLog('HeadlineView.onUserLoggedIn:%@', notification);
-    [headlineController loadHeadlines];
+    [[HeadlineController sharedHeadlineController] loadHeadlines];
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)aTableView {
-    return [data count];
+    return [[HeadlineController sharedHeadlineController] count];
 }
 
 - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex {
-    return [data objectAtIndex:rowIndex];
+    return [[HeadlineController sharedHeadlineController] objectAtIndex:rowIndex];
 }
 
 - (void)tableView:(CPTableView)aTableView viewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
@@ -137,8 +128,8 @@ var HeadlineItemViewWidth = 200.0,
 - (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
 {
     CPLog("tableView:%@ shouldSelectRow:%@", aTableView, rowIndex);
-    var headline = [data objectAtIndex:rowIndex];
-    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_SELECTED object:headline];
+    var headline = [[HeadlineController sharedHeadlineController] objectAtIndex:rowIndex];
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_SELECTED object:headline.id];
     return YES;
 }
 @end

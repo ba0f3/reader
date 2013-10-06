@@ -1,16 +1,15 @@
 @import <AppKit/CPView.j>
 @import "../Constants.j"
 @import "../Controllers/EntryController.j"
+@import "../Controllers/HeadlineController.j"
 @import "Widgets/EntryView.j"
 
-var entryCache = {};
 @implementation ContentView : CPView
 {
    CPButtonBar buttonBar;
    CPView welcomeMessage;
    CPScrollView scrollView;
    EntryView entryView;
-   EntryController entryController;
 }
 
 - (void)initWithFrame:(CGRect)aFrame
@@ -21,7 +20,7 @@ var entryCache = {};
         [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onHeadlineSelected:) name:NOTIFICATION_HEADLINE_SELECTED object:nil];
         [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onEntryLoaded:) name:NOTIFICATION_ENTRY_LOADED object:nil];
 
-        entryController = [[EntryController alloc] init];
+        [EntryController sharedEntryController];
 
         scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]) - 26.0)];
         [scrollView setAutohidesScrollers:YES];
@@ -80,26 +79,16 @@ var entryCache = {};
 - (void)onHeadlineSelected:(CPNotification)notification
 {
     CPLog('onHeadlineSelected:%@', notification);
-    var headline = [notification object];
-    if(entryCache.hasOwnProperty(headline.id))
-    {
-        [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ENTRY_LOADED object:entryCache[headline.id]];
-    }
-    else
-    {
-        [entryController loadEntry:headline.id];
-    }
+    var headlineId = [notification object]
+    [[EntryController sharedEntryController] loadEntry:headlineId];
 }
 
 - (void)onEntryLoaded:(CPNotification)notification
 {
     CPLog('onEntryLoaded:%@', notification);
-    var entry = [notification object];
+    var entryId = [notification object];
 
-    if(!entryCache.hasOwnProperty(entry.id))
-        entryCache[entry.id] = entry;
-
-    [entryView setEntry:entry];
+    [entryView setEntry:[EntryController getCachedEntryWithId:entryId]];
     [self showEntryView];
 }
 

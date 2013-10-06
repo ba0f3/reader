@@ -7,7 +7,7 @@
 var HeadlineItemViewWidth = 200.0,
     HeadlineItemViewHeight = 100.0;
 
-@implementation ListView : CPView
+@implementation HeadlineView : CPView
 {
     HeadlineTableView tableView;
     CPArray data;

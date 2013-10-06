@@ -4,13 +4,13 @@
 @import "Controllers/CategoryController.j"
 @import "Controllers/HeadlineController.j"
 @import "Views/ContentView.j"
-@import "Views/ListView.j"
+@import "Views/HeadlineView.j"
 @import "Views/NavigationView.j"
 @import "Models/User.j"
 @import "Controllers/LoginController.j"
 
 var NavigationAreaWidth = 200.0,
-    ListAreaWidth = 300.0;
+    HeadlineAreaWidth = 300.0;
 
 
 var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier";
@@ -19,7 +19,7 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier";
 {
     User user;
     NavigationView navigationArea;
-    ListView listArea;
+    HeadlineView headlineArea;
     ContentView contentArea;
     CPView contentView
     CPSplitView verticalSplitter;
@@ -86,12 +86,12 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier";
     [contentView addSubview:verticalSplitter];
 
 
-    listArea = [[ListView alloc] initWithFrame:CGRectMake(0, 0, ListAreaWidth, CGRectGetHeight([verticalSplitter bounds]))];
+    headlineArea = [[HeadlineView alloc] initWithFrame:CGRectMake(0, 0, HeadlineAreaWidth, CGRectGetHeight([verticalSplitter bounds]))];
 
-    contentArea = [[ContentView alloc] initWithFrame:CGRectMake(ListAreaWidth, 0.0, CGRectGetWidth([verticalSplitter bounds]) - ListAreaWidth, CGRectGetHeight([verticalSplitter bounds]))];
+    contentArea = [[ContentView alloc] initWithFrame:CGRectMake(HeadlineAreaWidth, 0.0, CGRectGetWidth([verticalSplitter bounds]) - HeadlineAreaWidth, CGRectGetHeight([verticalSplitter bounds]))];
     [contentArea setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    [verticalSplitter addSubview:listArea];
+    [verticalSplitter addSubview:headlineArea];
     [verticalSplitter addSubview:contentArea];
     [verticalSplitter setButtonBar:[contentArea getButtonBar] forDividerAtIndex:0];
 }

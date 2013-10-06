@@ -69,7 +69,7 @@ RSSHeadlineOrderByTitle = 2;
 {
 	var data = {
 		'orderMode': orderMode,
-		'lastTimestamp': [lastTimestamp timeIntervalSince1970],
+		'lastTimestamp': lastTimestamp,
 		'feed': selectedFeed,
 		'category': selectedCategory
 	}

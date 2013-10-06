@@ -53,7 +53,7 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier";
 - (void)onUserLoggedIn:(CPNotification)notification
 {
     CPLog('AppController.onUserLoggedIn:%@', notification);
-    User = [[User alloc] initFromObject:[notification object]];
+    user = [notification object];
 
     [theWindow orderFront:self];
 }

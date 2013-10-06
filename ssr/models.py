@@ -2,11 +2,11 @@ from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask.ext.login import current_user
 from flask.ext.security import UserMixin, RoleMixin
-from ssr import app, db, logger
-import ssr.configs
+from ssr import db
 from ssr.helpers import html_sanitizer
 import datetime
 import hashlib
+import calendar
 
 
 class Category(db.Model):
@@ -171,7 +171,7 @@ class User(db.Model, UserMixin):
         return {
             'id': self.id,
             'username': self.username,
-            'last_login': self.last_login,
+            'last_login': calendar.timegm(self.last_login.utctimetuple()),
             'email': self.email,
             'full_name': self.full_name,
             'locale': self.locale,

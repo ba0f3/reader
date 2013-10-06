@@ -20,7 +20,7 @@
 		[self setUsername:obj.username];
 		[self setEmail:obj.email];
 		[self setFullname:obj.fullname];
-		[self setLastLogin:obj.lastLogin];
+		[self setLastLogin:[[CPDate alloc] initWithTimeIntervalSince1970:obj.lastLogin]];
 		[self setLocale:obj.locale];
 		[self setTimezone:obj.timezone];
 	}

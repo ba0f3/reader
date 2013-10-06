@@ -170,12 +170,12 @@ var loginControllerSharedInstance = nil,
 	if(data.login)
 	{
 		[ServerConnection setAuthToken:data.authToken];
-		[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_USER_LOGGED_IN object:data.user];
+		[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_USER_LOGGED_IN object:[[User alloc] initFromObject:data.user]];
 		[self hideLoginWindow:self];
 	}
 	else if(data.open)
 	{
-		[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_USER_LOGGED_IN object:data.user];
+		[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_USER_LOGGED_IN object:[[User alloc] initFromObject:data.user]];
 		[self hideLoginWindow:self];
 	}
 }

@@ -43,6 +43,9 @@ def login():
         return make_error(gettext('Invalid username or password!'))
     else:
         if login_user(user, remember):
+            user.last_login = datetime.now()
+            db.session.add(user)
+            db.session.commit()
             return jsonify(login=True, authToken=user.get_auth_token(), user=user.get_profile())
 
 

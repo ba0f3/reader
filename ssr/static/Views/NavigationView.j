@@ -3,10 +3,12 @@
 @import "../Controllers/CategoryController.j"
 @import "Widgets/FolderItemView.j"
 
+var SpecialFoldersViewHeight = 110.0;
 @implementation NavigationView : CPView
 {
-	CPDictionary items @accessors;
-	CPOutlineView _outlineView;
+	CPDictionary specialFolders @accessors;
+	CPOutlineView _specialFoldersViews;
+	CPOutlineView _categoriesViews;
 
 	CategoryController categoryController @accessors(readonly);
 }
@@ -16,45 +18,49 @@
 	[[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onCategoryLoaded:) name:NOTIFICATION_CATEGORY_LOADED object:nil];
 	[[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onUserLoggedIn:) name:NOTIFICATION_USER_LOGGED_IN object:nil];
 
-	categoryController = [[CategoryController alloc] init];
+	specialFolders = [CPDictionary dictionaryWithObjects:[[@"Unread", @"Favorites", @"Archives"]] forKeys:[@"Special"]];
 
-	items = [CPDictionary dictionaryWithObjects:[[@"Android", @"Ubuntu", @"Linux"], [@"Unread", @"Favorites", @"Archives"]] forKeys:[@"Labels", @"All Feeds"]];
 	self = [super initWithFrame:aFrame];
     if (self)
     {
-    	//self._DOMElement.style.boxShadow="5px 5px 1px #888888";
     	self._DOMElement.style.borderRight="1px solid rgb(184, 178, 178)";
     	[self setAutoresizingMask:CPViewHeightSizable | CPViewMaxXMargin];
 
-		var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, CGRectGetHeight([self bounds]) - 26.0)];
+    	var tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"tableColumn"];
+	    [tableColumn setWidth:200.0];
+
+	    _specialFoldersViews = [[CPOutlineView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), SpecialFoldersViewHeight)];
+	    [_specialFoldersViews setHeaderView:nil];
+	    [_specialFoldersViews setCornerView:nil];
+	    [_specialFoldersViews addTableColumn:tableColumn];
+	    [_specialFoldersViews setOutlineTableColumn:tableColumn];
+	    [_specialFoldersViews setBackgroundColor:[CPColor colorWithHexString:@"E0E0E0"]]; // 333333
+		[_specialFoldersViews setAutoresizingMask:CPViewWidthSizable];
+	    [_specialFoldersViews setDelegate:self];
+	    [_specialFoldersViews setDataSource:self];
+	    [_specialFoldersViews expandItem:@"Special"];
+	    [self addSubview:_specialFoldersViews];
+
+		var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, SpecialFoldersViewHeight, 200.0, CGRectGetHeight([self bounds]) - SpecialFoldersViewHeight - 26.0)];
 	    [scrollView setBackgroundColor:[CPColor colorWithHexString:@"e0ecfa"]];
 	    [scrollView setAutohidesScrollers:YES];
 	    [scrollView setHasHorizontalScroller:NO];
 	    [scrollView setHasVerticalScroller:YES]; 
 	    [scrollView setAutoresizingMask:CPViewHeightSizable];
-
-	    _outlineView = [[CPOutlineView alloc] initWithFrame:[scrollView bounds]];
-	    var tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"tableColumn"];
-	    [tableColumn setWidth:200.0];
-
-	    //TODO custom dataView for Folder
-	    //var dataView  = [[FolderItemView alloc] initWithFrame:CGRectMake(0, 0, 200, 25)];
-	    //[tableColumn setDataView:dataView];
-
-	    [_outlineView setHeaderView:nil];
-	    [_outlineView setCornerView:nil];
-	    [_outlineView addTableColumn:tableColumn];
-	    [_outlineView setOutlineTableColumn:tableColumn];
-	    [_outlineView setBackgroundColor:[CPColor colorWithHexString:@"E0E0E0"]]; // 333333
-
-	    //[_outlineView setAutoresizingMask:CPViewHeightSizable];
-
-	    [scrollView setDocumentView:_outlineView];
-
 	    [self addSubview:scrollView];
 
-		[_outlineView setDelegate:self];
-	    [_outlineView setDataSource:self];
+	    _categoriesViews = [[CPOutlineView alloc] initWithFrame:[scrollView bounds]];
+	    [_categoriesViews setHeaderView:nil];
+	    [_categoriesViews setCornerView:nil];
+	    [_categoriesViews addTableColumn:tableColumn];
+	    [_categoriesViews setOutlineTableColumn:tableColumn];
+	    [_categoriesViews setBackgroundColor:[CPColor colorWithHexString:@"E0E0E0"]];
+	    [_categoriesViews setDelegate:self];
+	    [_categoriesViews setDataSource:self];
+
+	    [scrollView setDocumentView:_categoriesViews];
+
+
 
 	    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight([self bounds]) - 26.0, CGRectGetWidth([self bounds]), 26.0)]; //you need to use your own frame obviously
 	    [buttonBar setHasResizeControl:NO];
@@ -104,9 +110,9 @@
     for(var i = 0; i < categories.length; i ++)
     {
     	var category = categories[i];
-    	[items setObject:[category feeds] forKey:[category name]]
+    	[specialFolders setObject:[category feeds] forKey:[category name]]
     }
-    [_outlineView reloadData];
+    [_specialFoldersViews reloadData];
 
 }
 
@@ -122,12 +128,12 @@
 
     if (item === nil)
     {
-        var keys = [items allKeys];
+        var keys = [specialFolders allKeys];
         return [keys objectAtIndex:index];
     }
     else
     {
-        var values = [items objectForKey:item];
+        var values = [specialFolders objectForKey:item];
         return [values objectAtIndex:index];
     }
 }
@@ -135,8 +141,7 @@
 - (BOOL)outlineView:(CPOutlineView)outlineView isItemExpandable:(id)item
 {
     CPLog("NavigationView.outlineView:%@ isItemExpandable:%@", outlineView, item);
-
-    var values = [items objectForKey:item];
+    var values = [specialFolders objectForKey:item];
     return ([values count] > 0);
 }
 
@@ -146,11 +151,11 @@
 
     if (item === nil)
     {
-        return [items count];
+        return [specialFolders count];
     }
     else
     {
-        var values = [items objectForKey:item];
+        var values = [specialFolders objectForKey:item];
         return [values count];
     }
 }
@@ -161,11 +166,18 @@
     return item;
 }
 
-- (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item
+- (BOOL)outlineView:(CPOutlineView)outlineView shouldCollapseItem:(id)item
+{
+	CPLog("NavigationView.outlineView:%@ shouldCollapseItem:%@", outlineView, item);
+	if(outlineView == _specialFoldersViews && item == @"Special")  return NO;
+	return YES;
+}
+
+/*- (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item
 {
 	CPLog("NavigationView.outlineView:%@ shouldExpandItem:%@", outlineView, item);
 	return YES;
-}
+}*/
 
 - (void)outlineView:(CPOutlineView)outlineView willDisplayView:(id)dataView forTableColumn:(CPTableColumn)tableColumn item:(id)item
 {

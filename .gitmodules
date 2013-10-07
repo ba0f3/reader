@@ -1,0 +1,3 @@
+[submodule "ssr/static/Frameworks/GCKit"]
+	path = ssr/static/Frameworks/GCKit
+	url = git@github.com:rgv151/GCKit.git

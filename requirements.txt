@@ -8,3 +8,4 @@ feedparser
 apscheduler
 listparser
 beautifulsoup4
+opml

@@ -13,19 +13,19 @@ Reader is an open source web based RSS Reader client, by [VN Nerds](https://gith
 How to start
 ------------
 
-**Install required packages:**
-$ sudo apt-get install python-dev python-pip python-lxml python-mysqldb libxslt1-dev
-$ sudo pip install -r requirements.txt
+**Install required packages:**<br>
+$ sudo apt-get install python-dev python-pip python-lxml python-mysqldb libxslt1-dev<br>
+$ sudo pip install -r requirements.txt<br>
 
 
-**Init database:**
-$ ./manage.py db init
-$ ./manage.py db migrate
-$ ./manage.py db upgrade
+**Init database:**<br>
+$ ./manage.py db init<br>
+$ ./manage.py db migrate<br>
+$ ./manage.py db upgrade<br>
 
 
-**Start server:**
-$ ./manage.py runserver
+**Start server:**<br>
+$ ./manage.py runserver<br>
 
 
 License

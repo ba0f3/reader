@@ -20,15 +20,18 @@ var CategoryDataViewImage = 1,
     	_image = [[CPFaviconView alloc] initWithFrame:CGRectMake(0, 0, 20, 20)];
     	[self addSubview:_image];
 
-    	_text = [[CPTextField alloc] initWithFrame:CGRectMake(20.0, 0.0, 140.0, 25.0)];
+    	_text = [[CPTextField alloc] initWithFrame:CGRectMake(20.0, 0.0, 130.0, 25.0)];
     	[_text setVerticalAlignment:CPCenterVerticalTextAlignment];
     	[_text setLineBreakMode:CPLineBreakByTruncatingTail];
     	[self addSubview:_text];
 
-    	_badge = [[CPTextField alloc] initWithFrame:CGRectMake(160.0, 0.0, 20.0, 25.0)];
+    	_badge = [[CPTextField alloc] initWithFrame:CGRectMake(195.0, 0.0, 20.0, 25.0)];
     	[_badge setVerticalAlignment:CPCenterVerticalTextAlignment];
+    	[_badge setAlignment:CPCenterTextAlignment];
+		[_badge setBackgroundColor:[CPColor colorWithHexString:@"666"]];
+		[_badge setTextColor:[CPColor colorWithHexString:@"fff"]];
+		_badge._DOMElement.style.borderRadius = "7px";
 		[self addSubview:_badge];
-
 	}
 	return self;
 }
@@ -41,7 +44,16 @@ var CategoryDataViewImage = 1,
 
 - (void)setUnread:(int)unread
 {
-	[_badge setStringValue:unread];
+	if(unread)
+	{
+		[_badge setHidden:NO];
+		[_badge setStringValue:unread];
+		[_badge sizeToFit];
+	}
+	else
+	{
+		[_badge setHidden:YES];
+	}
 }
 
 - (void)setObjectValue:(id)object
@@ -51,7 +63,13 @@ var CategoryDataViewImage = 1,
 	if([object className] == 'Feed')
 	{
 		[_image setObjectValue:object];
+		[_badge setFrame:CGRectMake(180.0, 0.0, 20.0, 25.0)]
 	}
-	[self setUnread:"0"];
+	else
+	{
+		[_text setFrame:CGRectMake(0.0, 0.0, 160.0, 25.0)];
+		[_image setHidden:YES];
+	}
+	[self setUnread:189];
 }
 @end

@@ -8,7 +8,7 @@
 @import "Models/User.j"
 @import "Controllers/LoginController.j"
 
-var NavigationAreaWidth = 200.0,
+var NavigationAreaWidth = 250.0,
     HeadlineAreaWidth = 300.0;
 
 

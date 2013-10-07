@@ -8,15 +8,18 @@
 var SpecialFoldersViewHeight = 110.0;
 @implementation NavigationView : CPView
 {
+	CPView _scrollDocumentView;
 	CPDictionary specialFolders @accessors;
 	CPOutlineView _specialFoldersViews;
 	CPOutlineView _categoriesViews;
+	CPScrollView scrollView;
 }
 
 - (void)initWithFrame:(CGRect)aFrame
 {
-	[[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onCategoryLoaded:) name:NOTIFICATION_CATEGORY_LOADED object:nil];
-	[[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onUserLoggedIn:) name:NOTIFICATION_USER_LOGGED_IN object:nil];
+	var defaultCenter = [CPNotificationCenter defaultCenter];
+	[defaultCenter addObserver:self selector:@selector(onCategoryLoaded:) name:NOTIFICATION_CATEGORY_LOADED object:nil];
+	[defaultCenter addObserver:self selector:@selector(onUserLoggedIn:) name:NOTIFICATION_USER_LOGGED_IN object:nil];
 
 	specialFolders = [CPDictionary dictionaryWithObjects:[[@"Unread", @"Favorites", @"Archives"]] forKeys:[@"Special"]];
 
@@ -26,20 +29,32 @@ var SpecialFoldersViewHeight = 110.0;
     	self._DOMElement.style.borderRight="1px solid rgb(184, 178, 178)";
     	[self setAutoresizingMask:CPViewHeightSizable | CPViewMaxXMargin];
 
-    	var tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"tableColumn"];
-	    [tableColumn setWidth:200.0];
+    	scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]) - 26.0)];
+	    [scrollView setBackgroundColor:[CPColor colorWithHexString:@"e0ecfa"]];
+	    [scrollView setAutohidesScrollers:YES];
+	    [scrollView setHasHorizontalScroller:NO];
+	    [scrollView setHasVerticalScroller:YES]; 
+	    [scrollView setAutoresizingMask:CPViewHeightSizable];
+	    [self addSubview:scrollView];
 
-	    _specialFoldersViews = [[CPOutlineView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), SpecialFoldersViewHeight)];
+	    _scrollDocumentView = [[CPView alloc] initWithFrame:[scrollView _insetBounds]];
+	    [scrollView setDocumentView:_scrollDocumentView];
+
+    	var tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"tableColumn"];
+	    [tableColumn setWidth:CGRectGetWidth([_scrollDocumentView bounds])];
+
+	    _specialFoldersViews = [[CPOutlineView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([_scrollDocumentView bounds]), SpecialFoldersViewHeight)];
 	    [_specialFoldersViews setHeaderView:nil];
 	    [_specialFoldersViews setCornerView:nil];
 	    [_specialFoldersViews addTableColumn:tableColumn];
 	    [_specialFoldersViews setOutlineTableColumn:tableColumn];
 	    [_specialFoldersViews setBackgroundColor:[CPColor colorWithHexString:@"E0E0E0"]]; // 333333
-		[_specialFoldersViews setAutoresizingMask:CPViewWidthSizable];
+		[_specialFoldersViews setAutoresizingMask:CPViewWidthSizable | CPViewMinXMargin | CPViewMaxXMargin];
+
 	    [_specialFoldersViews setDelegate:self];
 	    [_specialFoldersViews setDataSource:self];
 	    [_specialFoldersViews expandItem:@"Special"];
-	    [self addSubview:_specialFoldersViews];
+	    [_scrollDocumentView addSubview:_specialFoldersViews];
 
 	    var smartFolderIcon = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 16.0, 16.0)];
 	    [smartFolderIcon setBordered:NO];
@@ -49,18 +64,14 @@ var SpecialFoldersViewHeight = 110.0;
 
 	    [_specialFoldersViews setDisclosureControlPrototype:smartFolderIcon];
 
-	    var categoryHeader = [[CategoryHeader alloc] initWithFrame:CGRectMake(0.0, SpecialFoldersViewHeight, 200.0, 26.0)]
-	    [self addSubview:categoryHeader];
+	    var categoryHeader = [[CategoryHeader alloc] initWithFrame:CGRectMake(0.0, SpecialFoldersViewHeight, CGRectGetWidth([_scrollDocumentView bounds]), 26.0)]
+	    [categoryHeader setAutoresizingMask:CPViewWidthSizable | CPViewMinXMargin | CPViewMaxXMargin];
+	    [_scrollDocumentView addSubview:categoryHeader];
 
-		var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, SpecialFoldersViewHeight+26.0, 200.0, CGRectGetHeight([self bounds]) - SpecialFoldersViewHeight - 52.0)];
-	    [scrollView setBackgroundColor:[CPColor colorWithHexString:@"e0ecfa"]];
-	    [scrollView setAutohidesScrollers:YES];
-	    [scrollView setHasHorizontalScroller:NO];
-	    [scrollView setHasVerticalScroller:YES]; 
-	    [scrollView setAutoresizingMask:CPViewHeightSizable];
-	    [self addSubview:scrollView];
-
-		_categoriesViews = [[CPOutlineView alloc] initWithFrame:[scrollView bounds]];
+		_categoriesViews = [[CPOutlineView alloc] initWithFrame:CGRectMake(0.0, SpecialFoldersViewHeight + 26, CGRectGetWidth([_scrollDocumentView bounds]), CGRectGetHeight([_scrollDocumentView bounds]) - SpecialFoldersViewHeight- 26 )];
+		//[_categoriesViews setIndentationPerLevel:9.0];
+		[_categoriesViews setPostsFrameChangedNotifications:YES];
+		[_categoriesViews setPostsBoundsChangedNotifications:YES];
 	    [_categoriesViews setHeaderView:nil];
 	    [_categoriesViews setCornerView:nil];
 	    [_categoriesViews addTableColumn:tableColumn];
@@ -69,7 +80,7 @@ var SpecialFoldersViewHeight = 110.0;
 	    [_categoriesViews setDelegate:self];
 	    [_categoriesViews setDataSource:self];
 
-	    [scrollView setDocumentView:_categoriesViews];
+	    [_scrollDocumentView addSubview:_categoriesViews];
 
 	    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0, CGRectGetHeight([self bounds]) - 26.0, CGRectGetWidth([self bounds]), 26.0)]; //you need to use your own frame obviously
 	    [buttonBar setHasResizeControl:NO];
@@ -107,6 +118,9 @@ var SpecialFoldersViewHeight = 110.0;
 	    [refreshButton setEnabled:YES];
 
 	    [buttonBar setButtons:[addButton, minusButton, popUpButton, refreshButton]];
+
+	[defaultCenter addObserver:self selector:@selector(categoryOutlineViewFrameChanged:) name:CPViewFrameDidChangeNotification object:_categoriesViews];
+   	[defaultCenter addObserver:self selector:@selector(categoryOutlineViewFrameChanged:) name:CPViewBoundsDidChangeNotification object:_categoriesViews];
 	}
 
     return self;
@@ -122,6 +136,21 @@ var SpecialFoldersViewHeight = 110.0;
 {
     CPLog('NavigationView.onUserLoggedIn:%@', notification);
     [[CategoryController sharedCategoryController] loadCategories];
+}
+
+- (void)categoryOutlineViewFrameChanged:(CPNotification)notification
+{
+	if([notification object] == _categoriesViews)
+	{
+		var subviews = [_scrollDocumentView subviews];
+		var frame = CGRectMakeZero();;
+		for(var i = 0; i < subviews.length; i++)
+		{
+			var subview = subviews[i];
+			frame = CGRectUnion(frame, [subview frame]);
+		}
+		[_scrollDocumentView setFrameSize:CGSizeMake(CGRectGetWidth([_scrollDocumentView bounds]), CGRectGetHeight(frame))];
+	}
 }
 
 - (id)outlineView:(CPOutlineView)outlineView child:(int)index ofItem:(id)item
@@ -259,9 +288,9 @@ var SpecialFoldersViewHeight = 110.0;
 	return YES;
 }
 
-- (CPView)outlineView:(id)outlineView dataViewForTableColumn:(CPTableColumn)tableColumn item:(id)item
+- (CPView)outlineView:(id)outlineView viewForTableColumn:(CPTableColumn)tableColumn item:(id)item
 {
-	CPLog("NavigationView.outlineView:%@ dataViewForTableColumn:%@ item:%@", outlineView, tableColumn, item);
+	CPLog("NavigationView.outlineView:%@ viewForTableColumn:%@ item:%@", outlineView, tableColumn, item);
 	if(outlineView == _categoriesViews)
     {
 		return [[CategoryDataView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 25.0)];

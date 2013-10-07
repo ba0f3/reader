@@ -3,6 +3,7 @@
 @import "../Controllers/CategoryController.j"
 @import "Widgets/FolderItemView.j"
 @import "Widgets/CategoryHeader.j"
+@import "Widgets/CategoryDataView.j"
 
 var SpecialFoldersViewHeight = 110.0;
 @implementation NavigationView : CPView
@@ -59,9 +60,7 @@ var SpecialFoldersViewHeight = 110.0;
 	    [scrollView setAutoresizingMask:CPViewHeightSizable];
 	    [self addSubview:scrollView];
 
-
-
-	    _categoriesViews = [[CPOutlineView alloc] initWithFrame:[scrollView bounds]];
+		_categoriesViews = [[CPOutlineView alloc] initWithFrame:[scrollView bounds]];
 	    [_categoriesViews setHeaderView:nil];
 	    [_categoriesViews setCornerView:nil];
 	    [_categoriesViews addTableColumn:tableColumn];
@@ -166,7 +165,7 @@ var SpecialFoldersViewHeight = 110.0;
     }
     else
     {
-    	if([item className] == 'Category') return YES;
+    	if([item className] == 'Category' && [[item feeds] count]) return YES;
     	if([item className] == 'Feed') return NO;
     }
 }
@@ -258,5 +257,14 @@ var SpecialFoldersViewHeight = 110.0;
 		}
 	}
 	return YES;
+}
+
+- (CPView)outlineView:(id)outlineView dataViewForTableColumn:(CPTableColumn)tableColumn item:(id)item
+{
+	CPLog("NavigationView.outlineView:%@ dataViewForTableColumn:%@ item:%@", outlineView, tableColumn, item);
+	if(outlineView == _categoriesViews)
+    {
+		return [[CategoryDataView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 25.0)];
+	}
 }
 @end

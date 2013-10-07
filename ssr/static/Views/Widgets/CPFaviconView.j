@@ -14,7 +14,9 @@ var GETFV_SERVICE = @"http://g.etfv.co/"
     self = [super initWithFrame:aFrame];
     if (self)
     {
-    	imageView = [[CPImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]))];
+        var x = (CGRectGetWidth(aFrame) - 16) / 2,
+            y = (CGRectGetHeight(aFrame) - 16) / 2 ;
+    	imageView = [[CPImageView alloc] initWithFrame:CGRectMake(x, y, 16.0, 16.0)];
     	[self addSubview:imageView]
 	}
 	return self;

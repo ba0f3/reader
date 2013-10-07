@@ -13,7 +13,7 @@
 	{
 		[self setId:obj.id];
 		[self setName:obj.name];
-		[self setSite:obj.site_url];
+		[self setSite:obj.site];
 		[self setOrder:obj.order_id];
 	}
 	return self

@@ -90,7 +90,7 @@ def get_categories():
             'name': row.name,
             'category_id': row.category_id,
             'order_id': row.order_id,
-            'sile_url': row.site_url})
+            'site': row.site_url})
 
     return jsonify(categories=category_list, feeds=feed_list)
 

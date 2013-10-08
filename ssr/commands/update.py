@@ -132,8 +132,7 @@ def metadata(feed_id=None):
 
 @UpdateCommand.command
 def unread():
-    "Update unread cache"
-    "Create unread cache records"
+    "Update global unread cache"
 
     logger.debug("Updating global unread cache:")
     sql = "INSERT INTO feed_unread_cache (user_id, user_feed_id, value, last_update) \
@@ -158,4 +157,4 @@ def unread():
         ON DUPLICATE KEY UPDATE value=t.value"
 
     result = db.engine.execute(sql)
-    logger.debug("feed_unread_cache: %s affected", result.rowcount)
+    logger.debug("category_unread_cache: %s affected", result.rowcount)

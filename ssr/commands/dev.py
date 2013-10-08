@@ -1,11 +1,6 @@
-from flask.ext.script import Manager, Command
-from ssr import db, logger
-from ssr.models import *
-import feedparser
-from dateutil import parser
-from ssr import app
-from ssr.updater import Updater;
-import uuid;
+from flask.ext.script import Manager
+from ssr import db
+from ssr.models import Category, User, Entry, UserFeed, Feed
 from ssr.helpers import import_opml, html_sanitizer
 
 DevelCommand = Manager(usage="Useful commands for development")
@@ -56,7 +51,6 @@ def drop():
     "Drop all table"
     db.drop_all()
 
-
 @DevelCommand.option('-u', '--user-id', dest='uid', help="User for import data to")
 @DevelCommand.option('-p', '--path', dest='path', help="Path to local OPML file or online url")
 def opml(uid, path):
@@ -82,17 +76,3 @@ def sanitizer():
         entry.content_hash = Entry.hash_content(result)
         db.session.add(entry)
     db.session.commit()
-
-UpdateCommand = Manager(usage='Perform database update')
-
-@UpdateCommand.command
-def feeds():
-    "Update feed entries"
-    Updater.feeds()
-
-@UpdateCommand.command
-def metadata():
-    "Update feed metadata, such as: site url, favicon, update interval"
-    Updater.metadata()
-
-

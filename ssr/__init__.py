@@ -2,8 +2,7 @@
 
 from flask import Flask, request
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.script import Manager
-from flask.ext.migrate import Migrate, MigrateCommand
+from flask.ext.migrate import Migrate
 #from flask.ext.restless import APIManager
 from flask.ext.security import Security, SQLAlchemyUserDatastore, current_user
 from flask.ext.babel import Babel
@@ -47,21 +46,18 @@ def get_timezone():
         return current_user.timezone if current_user.timezone is not None else None
 
 from ssr.cron import scheduler
-from ssr.commands import *
+import ssr.commands
 import ssr.views
-from ssr.models import *
+from ssr.models import User, Role
 
+# Flask-Script manager
+manager = ssr.commands.manager
 
 # Setup Flask-Security
 security = Security(app, SQLAlchemyUserDatastore(db, User, Role))
 
 # Setup Flask-Migrate
 migrate = Migrate(app, db)
-manager = Manager(app)
-manager.add_command('db', MigrateCommand)
-manager.add_command('update', UpdateCommand)
-manager.add_command('dev', DevelCommand)
-
 
 # Create the Flask-Restless API manager.
 #api_manager = APIManager(app, flask_sqlalchemy_db=db)

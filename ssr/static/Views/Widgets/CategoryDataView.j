@@ -9,7 +9,6 @@ var CategoryDataViewImage = 1,
     CPTextField _text;
     CPTextField _badge;
     id _objectValue;
-    CPString _stringValue;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -38,7 +37,6 @@ var CategoryDataViewImage = 1,
 
 - (void)setStringValue:(CPString)text
 {
-    _stringValue = text;
     [_text setStringValue:text];
 }
 
@@ -58,10 +56,18 @@ var CategoryDataViewImage = 1,
 - (void)setObjectValue:(id)object
 {
     CPLog("CategoryDataView.setObjectValue:%@", object);
+    if (_objectValue === object)
+        return;
+
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_ITEM_UNREAD_UPDATED object:_objectValue];
+
     _objectValue = object;
-    if ([object className] == 'Feed')
+
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onItemUnreadUpdated:) name:NOTIFICATION_ITEM_UNREAD_UPDATED object:_objectValue];
+
+    if ([_objectValue className] == 'Feed')
     {
-        [_image setObjectValue:object];
+        [_image setObjectValue:_objectValue];
         [_badge setFrame:CGRectMake(180.0, 0.0, 25.0, 25.0)]
     }
     else
@@ -69,6 +75,12 @@ var CategoryDataViewImage = 1,
         [_text setFrame:CGRectMake(0.0, 0.0, 160.0, 25.0)];
         [_image setHidden:YES];
     }
-    [self setUnread:[object unread]];
+    [self setUnread:[_objectValue unread]];
+}
+
+- (void)onItemUnreadUpdated:(CPNotification)notification
+{
+    var item = [notification object];
+    [self setUnread:[item unread]];
 }
 @end

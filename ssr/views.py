@@ -174,11 +174,12 @@ def get_entries(user_entry_id):
     user_id = current_user.id
 
     sql = """SELECT
-            ue.id, e.title, e.link, f.site_url, e.content,
+            ue.id, e.title, e.link, f.site_url, e.content, uf.feed_id, uf.category_id,
             e.published, e.author, e.comments, ue.unread, ue.stared, ue.note
         FROM user_entry AS ue
         INNER JOIN entry AS e ON e.id = ue.entry_id
         INNER JOIN feed AS f ON f.id = e.feed_id
+        INNER JOIN user_feed AS uf ON f.id = uf.feed_id
         WHERE ue.user_id = %s
         AND ue.id = %s
         LIMIT 1""" % (user_id, user_entry_id)
@@ -197,6 +198,8 @@ def get_entries(user_entry_id):
             'unread': row.unread,
             'stared': row.stared,
             'note': row.note,
+            'feed_id': row.feed_id,
+            'category_id': row.category_id
         }
         return jsonify(objects=entry)
     return make_error(gettext('Entry not found'), 404)

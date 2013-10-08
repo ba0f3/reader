@@ -13,6 +13,8 @@
     BOOL unread @accessors;
     BOOL stared @accessors;
     CPString note @accessors;
+    int category @accessors;
+    int feed @accessors;
 }
 - (id)initFromObject:(Object)obj
 {
@@ -30,6 +32,8 @@
         [self setUnread:obj.unread];
         [self setStared:obj.stared];
         [self setNote:obj.note];
+        [self setCategory:obj.category_id];
+        [self setFeed:obj.feed_id];
     }
     return self;
 }

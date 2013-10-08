@@ -1,5 +1,6 @@
 @import <AppKit/CPView.j>
 @import "../Constants.j"
+@import "../Controllers/CategoryController.j"
 @import "../Controllers/EntryController.j"
 @import "../Controllers/HeadlineController.j"
 @import "Widgets/EntryView.j"
@@ -88,7 +89,17 @@
     var entryId = [notification object];
 
     [self showEntryView];
-    [entryView setEntry:[EntryController getCachedEntryWithId:entryId]];
+    var entry = [[EntryController sharedEntryController] getCachedEntryWithId:entryId];
+    [entryView setEntry:entry];
+
+    if ([entry unread] == YES)
+    {
+        [entry setUnread:NO];
+        var category = [[CategoryController sharedCategoryController] getCategoryById:[entry category]],
+            feed = [category getFeedById:[entry feed]];
+        [category decreaseUnread];
+        [feed decreaseUnread];
+    }
 }
 
 - (void)showWelcomeMessage

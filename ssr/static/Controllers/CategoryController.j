@@ -8,6 +8,7 @@ var path = @"/api/categories",
 @implementation CategoryController : CPObject
 {
     CPMutableArray categories @accessors(readonly);
+    CPMutableDictionary _categoryMap;
 }
 
 + (CategoryController)sharedCategoryController
@@ -26,6 +27,7 @@ var path = @"/api/categories",
     if (self)
     {
         categories = [CPMutableArray array];
+        _categoryMap = [CPMutableDictionary dictionary];
     }
     return self;
 }
@@ -59,8 +61,18 @@ var path = @"/api/categories",
         var catid = data.categories[i].id;
         data.categories[i].feeds = feed_arrays[catid];
         var category = [[Category alloc] initFromObject:data.categories[i]];
+
         [categories addObject:category];
+        var index = [categories count] - 1;
+        [_categoryMap setValue:index forKey:'id_' + [category id]];
     }
+
     [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
+}
+
+- (Category)getCategoryById:(int)_id
+{
+    var index = [_categoryMap valueForKey:'id_' + _id];
+    return [categories objectAtIndex:index];
 }
 @end

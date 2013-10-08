@@ -44,11 +44,10 @@
         /* handle images loading to resize view to correct size */
         var images = _container.querySelectorAll('img'),
             count = images.length;
-        _countImage = function() {
+        function _countImage() {
             count--;
             if (count <= 0)
                 [self setFrameSize:CGSizeMake(_container.offsetWidth, _container.offsetHeight)];
-
         }
         if (images.length > 0)
             for (var i = 0; i < images.length; i++)

@@ -4,10 +4,11 @@
 @import "../Models/Entry.j"
 
 var path = @"/api/entry/%s",
-    entryCache = {},
     entryControllerSharedInstance;
 @implementation EntryController : CPObject
 {
+    CPMutableDictionary _entryCache
+
 }
 
 + (EntryController)sharedEntryController
@@ -19,9 +20,9 @@ var path = @"/api/entry/%s",
     return entryControllerSharedInstance;
 }
 
-+ (Entry)getCachedEntryWithId:(int)entryId
+- (Entry)getCachedEntryWithId:(int)entryId
 {
-    return entryCache.hasOwnProperty(entryId)?entryCache[entryId]:nil;
+    return [_entryCache objectForKey:entryId];
 }
 
 - (id)init
@@ -29,7 +30,7 @@ var path = @"/api/entry/%s",
     self = [super init];
     if (self)
     {
-
+        _entryCache = [CPMutableDictionary dictionary];
     }
     return self;
 }
@@ -47,7 +48,7 @@ var path = @"/api/entry/%s",
     }
     else
     {
-        if (entryCache.hasOwnProperty(entryId))
+        if ([_entryCache containsKey:entryId])
         {
             [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ENTRY_LOADED object:entryId];
         }
@@ -56,7 +57,6 @@ var path = @"/api/entry/%s",
             [[ServerConnection alloc] postJSON:[CPString stringWithFormat:path,entryId] withObject:nil setDelegate:self];
         }
     }
-
 }
 
 - (void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
@@ -65,7 +65,7 @@ var path = @"/api/entry/%s",
     data = JSON.parse(data);
     var entry = [[Entry alloc] initFromObject:data.objects];
 
-    entryCache[entry.id] = entry;
+    [_entryCache setObject:entry forKey:entry.id];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ENTRY_LOADED object:entry.id];
 }

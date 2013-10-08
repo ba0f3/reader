@@ -1,3 +1,5 @@
+@import "../Constants.j"
+
 @implementation Feed : CPObject
 {
     int id @accessors;
@@ -19,4 +21,16 @@
     }
     return self
 }
+
+- (void)decreaseUnread
+{
+    [self decreaseUnreadByValue:1];
+}
+
+- (void)decreaseUnreadByValue:(int)value
+{
+    unread-= value;
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ITEM_UNREAD_UPDATED object:self];
+}
+
 @end

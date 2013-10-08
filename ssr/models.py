@@ -182,9 +182,9 @@ class User(db.Model, UserMixin):
 class FeedUnreadCache(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
-    user_feed_id = db.Column(db.Integer, db.ForeignKey('user_feed.id', ondelete='CASCADE'))
+    user_feed_id = db.Column(db.Integer, db.ForeignKey('user_feed.id', ondelete='CASCADE'), unique=True)
     value = db.Column(db.Integer, default=0, nullable=False)
-    last_update = db.Column(db.DateTime, nullable=False, default="NOW()")
+    last_update = db.Column(db.DateTime, nullable=False)
 
     def increase(self, value):
         self.value += value
@@ -196,7 +196,7 @@ class FeedUnreadCache(db.Model):
 class CategoryUnreadCache(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id', ondelete='CASCADE'))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id', ondelete='CASCADE'), unique=True)
     value = db.Column(db.Integer, default=0, nullable=False)
     last_update = db.Column(db.DateTime, nullable=False)
 

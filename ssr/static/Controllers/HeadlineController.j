@@ -16,7 +16,8 @@ RSSHeadlineOrderByTitle = 2;
 	int selectedFeed;
 	int lastTimestamp;
 	int orderMode @accessors;
-	BOOL isPrefetching
+	BOOL isPrefetching;
+	BOOL noMoreResult;
 
 }
 
@@ -66,11 +67,13 @@ RSSHeadlineOrderByTitle = 2;
 	selectedFeed = 0;
 	lastTimestamp = 0;
 	isPrefetching = NO;
+	noMoreResult = NO;
 
 }
 
 - (void)loadHeadlines
 {
+	if(noMoreResult) return; // end of table, no more to load
 	var data = {
 		'orderMode': orderMode,
 		'lastTimestamp': lastTimestamp,
@@ -92,6 +95,7 @@ RSSHeadlineOrderByTitle = 2;
 
 - (void)prefetchHeadlines:(int)rowIndex
 {
+	if(noMoreResult) return; // end of table, no more to load
 	if(isPrefetching) return; // a request is in progress, ignore other
 
 	if(rowIndex + 3 >= [self count])
@@ -108,6 +112,10 @@ RSSHeadlineOrderByTitle = 2;
 	var headlines = [CPMutableArray array];
 
 	data = JSON.parse(data);
+
+	// last response return less then 20 article => no more article to load
+	if(data.count < 20) noMoreResult = YES;
+
 	var headline;
 	for (var i = 0; i < data.count; i++) {
 		headline = [[Headline alloc] initFromObject:data.objects[i]];

@@ -3,14 +3,14 @@
 
 @implementation CPHtmlView : CPView
 {
-	Object _container;
-	CPString _html;
-	BOOL _drawsBackground;
+    Object _container;
+    CPString _html;
+    BOOL _drawsBackground;
 
-	CPFont _textFont;
-	CPColor _textColor;
+    CPFont _textFont;
+    CPColor _textColor;
 
-	Function _loadCallback;
+    Function _loadCallback;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -18,8 +18,8 @@
     if (self = [super initWithFrame:aFrame])
     {
         _drawsBackground = YES;
-		[self setPostsFrameChangedNotifications:YES];
-		//[self setPostsBoundsChangedNotifications:YES];
+        [self setPostsFrameChangedNotifications:YES];
+        //[self setPostsBoundsChangedNotifications:YES];
         [self setBackgroundColor:[CPColor whiteColor]];
         [self _initDOMElement];
     }
@@ -28,8 +28,8 @@
 
 - (void)_initDOMElement
 {
-	_container = document.createElement('div');
-	_container.setAttribute('class', 'CPHtmlView');
+    _container = document.createElement('div');
+    _container.setAttribute('class', 'CPHtmlView');
     //_container.style.width = "100%";
     //_container.style.height = "auto";
 
@@ -41,24 +41,21 @@
 
     _loadCallback = function()
     {
-    	/* handle images loading to resize view to correct size */
-    	var images = _container.querySelectorAll('img');
-    	var count = images.length;
-    	var _countImage = function() {
-			count--;
-			if(count <= 0)
-			{
-				[self setFrameSize:CGSizeMake(_container.offsetWidth, _container.offsetHeight)];
-			}
-		}
-    	if(images.length > 0)
-    	{
-    		for(var i = 0; i < images.length; i++)
-    		{
-    			images[i].addEventListener('load', _countImage, false);
-    			images[i].addEventListener('error', _countImage, false);
-    		}
-    	}
+        /* handle images loading to resize view to correct size */
+        var images = _container.querySelectorAll('img'),
+            count = images.length;
+        _countImage = function() {
+            count--;
+            if (count <= 0)
+                [self setFrameSize:CGSizeMake(_container.offsetWidth, _container.offsetHeight)];
+
+        }
+        if (images.length > 0)
+            for (var i = 0; i < images.length; i++)
+            {
+                images[i].addEventListener('load', _countImage, false);
+                images[i].addEventListener('error', _countImage, false);
+            }
     }
 }
 
@@ -94,10 +91,10 @@
 
 - (void)setHTMLString:(CPString)html
 {
-	_html = html;
-	_container.innerHTML = html;
-	_loadCallback();
-	[self setFrameSize:CGSizeMake(_container.offsetWidth, _container.offsetHeight)];
+    _html = html;
+    _container.innerHTML = html;
+    _loadCallback();
+    [self setFrameSize:CGSizeMake(_container.offsetWidth, _container.offsetHeight)];
 }
 
 - (void)setFont:(CPFont)aFont
@@ -115,8 +112,8 @@
 
 - (void)setTextColor:(CPColor)aColor
 {
-	_textColor = aColor;
-	_container.style.color = [aColor cssString];
+    _textColor = aColor;
+    _container.style.color = [aColor cssString];
 }
 
 - (CPColor)textColor

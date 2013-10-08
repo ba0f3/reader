@@ -17,9 +17,9 @@
     {
         [self setBackgroundColor:[CPColor colorWithHexString:"B5B5B5"]];
 
-        var fontDosisBold = [CPFont boldFontWithName:'Dosis' size:12];
-        var fontDosis = [CPFont fontWithName:'Dosis' size:12];
-        var fontOpenSans = [CPFont fontWithName:'Open Sans' size:12];
+        var fontDosisBold = [CPFont boldFontWithName:'Dosis' size:12],
+            fontDosis = [CPFont fontWithName:'Dosis' size:12],
+            fontOpenSans = [CPFont fontWithName:'Open Sans' size:12];
 
         [self setAutoresizingMask:CPViewWidthSizable];
         title = [[CPTextField alloc] initWithFrame:CGRectMake(2.0, 2.0, CGRectGetWidth([self bounds]), 24)];

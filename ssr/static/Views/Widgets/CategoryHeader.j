@@ -7,11 +7,10 @@
     self = [super initWithFrame:aFrame];
     if (self)
     {
-    	self._DOMElement.style.background = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAaCAAAAABTb2kNAAAAF0lEQVQIW2M4w/Cf6T8TAxKGkeg0XA0AzfUQ7Z1M4bMAAAAASUVORK5CYII=) repeat-x";
+        self._DOMElement.style.background = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAaCAAAAABTb2kNAAAAF0lEQVQIW2M4w/Cf6T8TAxKGkeg0XA0AzfUQ7Z1M4bMAAAAASUVORK5CYII=) repeat-x";
 
-    	var fontDosisBold = [CPFont boldFontWithName:'Dosis' size:12];
-
-    	var text = [[CPTextField alloc] initWithFrame:CGRectMake(10.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]))];
+        var fontDosisBold = [CPFont boldFontWithName:'Dosis' size:12],
+            text = [[CPTextField alloc] initWithFrame:CGRectMake(10.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]))];
         [text setAutoresizingMask:CPViewWidthSizable];
         [text setTextColor:[CPColor colorWithHexString:@"333"]];
         [text setTextShadowColor:[CPColor colorWithHexString:@"CCC"]];

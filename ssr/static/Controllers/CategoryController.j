@@ -4,10 +4,10 @@
 
 
 var path = @"/api/categories",
-	categoryControllerSharedInstance;
+    categoryControllerSharedInstance;
 @implementation CategoryController : CPObject
 {
-	CPMutableArray categories @accessors(readonly);
+    CPMutableArray categories @accessors(readonly);
 }
 
 + (CategoryController)sharedCategoryController
@@ -22,43 +22,45 @@ var path = @"/api/categories",
 
 - (id)init
 {
-	self = [super init];
-	if(self)
-	{
-		categories = [CPMutableArray array];
-	}
-	return self;
+    self = [super init];
+    if (self)
+    {
+        categories = [CPMutableArray array];
+    }
+    return self;
 }
 
 - (void)loadCategories
 {
-	[[ServerConnection alloc] postJSON:path withObject:nil setDelegate:self];
+    [[ServerConnection alloc] postJSON:path withObject:nil setDelegate:self];
 }
 
--(void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
+- (void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
 {
-	CPLog('CategoryController.connection:%@ didReceiveData:%@', connection, '[HIDDEN]');
+    CPLog('CategoryController.connection:%@ didReceiveData:%@', connection, '[HIDDEN]');
 
-	data = JSON.parse(data);
-	var feed_arrays = [];
+    data = JSON.parse(data);
+    var feed_arrays = [];
 
-	for (var i = 0; i < data.feeds.length; i++) {
-		var catid = data.feeds[i].category_id;
+    for (var i = 0; i < data.feeds.length; i++)
+    {
+        var catid = data.feeds[i].category_id;
 
-		if(feed_arrays[catid] == undefined)
-		{
-			feed_arrays[catid] = [];
-		}
-		var feed = [[Feed alloc] initFromObject:data.feeds[i]];
-		feed_arrays[catid].push(feed);
-	}
+        if (feed_arrays[catid] == undefined)
+        {
+            feed_arrays[catid] = [];
+        }
+        var feed = [[Feed alloc] initFromObject:data.feeds[i]];
+        feed_arrays[catid].push(feed);
+    }
 
-	for (var i = 0; i < data.categories.length; i++) {
-		var catid = data.categories[i].id;
-		data.categories[i].feeds = feed_arrays[catid];
-		var category = [[Category alloc] initFromObject:data.categories[i]];
-		[categories addObject:category];
-	}
-	[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
+    for (var i = 0; i < data.categories.length; i++)
+    {
+        var catid = data.categories[i].id;
+        data.categories[i].feeds = feed_arrays[catid];
+        var category = [[Category alloc] initFromObject:data.categories[i]];
+        [categories addObject:category];
+    }
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
 }
 @end

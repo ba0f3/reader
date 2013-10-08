@@ -28,7 +28,7 @@ var HeadlineItemViewWidth = 200.0,
         var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]) - 26.0)];
         [scrollView setAutohidesScrollers:YES];
         [scrollView setHasHorizontalScroller:NO];
-        [scrollView setHasVerticalScroller:YES]; 
+        [scrollView setHasVerticalScroller:YES];
         [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [scrollView setDelegate:self];
 
@@ -95,11 +95,13 @@ var HeadlineItemViewWidth = 200.0,
     [[HeadlineController sharedHeadlineController] loadHeadlines];
 }
 
-- (int)numberOfRowsInTableView:(CPTableView)aTableView {
+- (int)numberOfRowsInTableView:(CPTableView)aTableView
+{
     return [[HeadlineController sharedHeadlineController] count];
 }
 
-- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex {
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex
+{
     CPLog('HeadlineView.tableView:%@ objectValueForTableColumn:%@ row:%@', aTableView, aTableColumn, rowIndex);
     [[HeadlineController sharedHeadlineController] prefetchHeadlines:rowIndex];
     return [[HeadlineController sharedHeadlineController] objectAtIndex:rowIndex];

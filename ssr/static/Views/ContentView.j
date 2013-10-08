@@ -14,8 +14,7 @@
 
 - (void)initWithFrame:(CGRect)aFrame
 {
-    var self = [super initWithFrame:aFrame];
-    if (self)
+    if (self = [super initWithFrame:aFrame])
     {
         [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onHeadlineSelected:) name:NOTIFICATION_HEADLINE_SELECTED object:nil];
         [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onEntryLoaded:) name:NOTIFICATION_ENTRY_LOADED object:nil];
@@ -25,7 +24,7 @@
         scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]) - 26.0)];
         [scrollView setAutohidesScrollers:YES];
         [scrollView setHasHorizontalScroller:NO];
-        [scrollView setHasVerticalScroller:YES]; 
+        [scrollView setHasVerticalScroller:YES];
         [scrollView setBackgroundColor:[CPColor colorWithHexString:"222"]];
         [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [self addSubview:scrollView];
@@ -79,7 +78,7 @@
 - (void)onHeadlineSelected:(CPNotification)notification
 {
     CPLog('onHeadlineSelected:%@', notification);
-    var headlineId = [notification object]
+    var headlineId = [notification object];
     [[EntryController sharedEntryController] loadEntry:headlineId];
 }
 
@@ -94,14 +93,14 @@
 
 - (void)showWelcomeMessage
 {
-    if(!welcomeMessage)
+    if (!welcomeMessage)
     {
         welcomeMessage = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]) - 26)];
         [welcomeMessage setBackgroundColor:[CPColor colorWithHexString:"222"]];
         [welcomeMessage setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [self addSubview:welcomeMessage];
 
-        var first = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, CGRectGetHeight([welcomeMessage bounds])/2 - 50, CGRectGetWidth([welcomeMessage bounds]), 200.0)];
+        var first = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, CGRectGetHeight([welcomeMessage bounds]) / 2 - 50, CGRectGetWidth([welcomeMessage bounds]), 200.0)];
         [first setStringValue:@"Welcome to Doda Reader"];
         [first setAutoresizingMask:CPViewWidthSizable | CPViewMaxXMargin | CPViewMinYMargin];
         [first setFont:[CPFont boldFontWithName:'Titillium Web' size:36 italic:YES]];
@@ -111,7 +110,7 @@
         [first setAlignment:CPCenterTextAlignment];
         [welcomeMessage addSubview:first];
 
-        var second = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, CGRectGetHeight([welcomeMessage bounds])/2, CGRectGetWidth([welcomeMessage bounds]), 200.0)];
+        var second = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, CGRectGetHeight([welcomeMessage bounds]) / 2, CGRectGetWidth([welcomeMessage bounds]), 200.0)];
         [second setStringValue:@"Please select an article to continue"];
         [second setAutoresizingMask:CPViewWidthSizable | CPViewMinXMargin | CPViewMinYMargin];
         [second setFont:[CPFont boldFontWithName:'Open Sans' size:16]];
@@ -127,7 +126,7 @@
 
 - (void)showEntryView
 {
-    if(!entryView)
+    if (!entryView)
     {
         entryView = [[EntryView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]) - 26)];
         [entryView setBackgroundColor:[CPColor colorWithHexString:"222"]];

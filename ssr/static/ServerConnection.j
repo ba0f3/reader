@@ -31,12 +31,12 @@ var _authToken = localStorage.authToken || nil;
     _delegate = delegate;
 
     var req = [[CPURLRequest alloc] initWithURL:url];
-    if(_authToken != nil && _authToken != undefined && _authToken != "")
+    if (_authToken != nil && _authToken != undefined && _authToken != "")
     {
         [req setValue:_authToken forHTTPHeaderField:@"X-Authentication-Token"];
     }
     [req setHTTPMethod:@"POST"];
-    if(object != nil)
+    if (object != nil)
         [req setHTTPBody:[CPString JSONFromObject:object]];
     [req setValue:"application/json" forHTTPHeaderField:@"Content-Type"];
     var conn = [CPURLConnection connectionWithRequest:req delegate:self];
@@ -48,7 +48,7 @@ var _authToken = localStorage.authToken || nil;
 
     var req = [[CPURLRequest alloc] initWithURL:url];
     [req setHTTPMethod:@"GET"];
-    if(_authToken != nil && _authToken != undefined && _authToken != "")
+    if (_authToken != nil && _authToken != undefined && _authToken != "")
     {
         [req setValue:_authToken forHTTPHeaderField:@"X-Authentication-Token"];
     }
@@ -59,7 +59,7 @@ var _authToken = localStorage.authToken || nil;
 
 - (void)connection:(CPURLConnection)connection didFailWithError:(id)error
 {
-    if([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
+    if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
         [_delegate connection:connection didFailWithError:error];
 }
 

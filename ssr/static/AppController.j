@@ -72,7 +72,7 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier";
     [contentView addSubview:navigationArea];
 
     // +2 => space b/w views
-    verticalSplitter = [[CPSplitView alloc] initWithFrame:CGRectMake(NavigationAreaWidth+2, 0, CGRectGetWidth([contentView bounds]) - NavigationAreaWidth, CGRectGetHeight([contentView bounds]))];
+    verticalSplitter = [[CPSplitView alloc] initWithFrame:CGRectMake(NavigationAreaWidth + 2, 0, CGRectGetWidth([contentView bounds]) - NavigationAreaWidth, CGRectGetHeight([contentView bounds]))];
     [verticalSplitter setDelegate:self];
     [verticalSplitter setVertical:YES];
     [verticalSplitter setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable ];

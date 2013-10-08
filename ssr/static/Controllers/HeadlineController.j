@@ -4,7 +4,7 @@
 
 
 var path = @"/api/headlines",
-	headlineControllerSharedInstance;
+    headlineControllerSharedInstance;
 
 RSSHeadlineOrderByNewestFirst = 0;
 RSSHeadlineOrderByOldestFirst = 1;
@@ -12,12 +12,12 @@ RSSHeadlineOrderByTitle = 2;
 
 @implementation HeadlineController : CPArrayController
 {
-	int selectedCategory;
-	int selectedFeed;
-	int lastTimestamp;
-	int orderMode @accessors;
-	BOOL isPrefetching;
-	BOOL noMoreResult;
+    int selectedCategory;
+    int selectedFeed;
+    int lastTimestamp;
+    int orderMode @accessors;
+    BOOL isPrefetching;
+    BOOL noMoreResult;
 
 }
 
@@ -32,16 +32,16 @@ RSSHeadlineOrderByTitle = 2;
 
 - (id)init
 {
-	[[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onCategorySelected:) name:NOTIFICATION_CATEGORY_SELECTED object:nil];
-	[[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onFeedSelected:) name:NOTIFICATION_FEED_SELECTED object:nil];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onCategorySelected:) name:NOTIFICATION_CATEGORY_SELECTED object:nil];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onFeedSelected:) name:NOTIFICATION_FEED_SELECTED object:nil];
 
-	self = [super init];
-	if(self)
-	{
-		orderMode = RSSHeadlineOrderByNewestFirst;
-		[self reset];
-	}
-	return self;
+    self = [super init];
+    if (self)
+    {
+        orderMode = RSSHeadlineOrderByNewestFirst;
+        [self reset];
+    }
+    return self;
 }
 
 - (void)onCategorySelected:(CPNotification)notification
@@ -62,70 +62,76 @@ RSSHeadlineOrderByTitle = 2;
 
 - (void)reset
 {
-	[self setContent:[CPArray array]];
-	selectedCategory = 0;
-	selectedFeed = 0;
-	lastTimestamp = 0;
-	isPrefetching = NO;
-	noMoreResult = NO;
+    [self setContent:[CPArray array]];
+    selectedCategory = 0;
+    selectedFeed = 0;
+    lastTimestamp = 0;
+    isPrefetching = NO;
+    noMoreResult = NO;
 
 }
 
 - (void)loadHeadlines
 {
-	if(noMoreResult) return; // end of table, no more to load
-	var data = {
-		'orderMode': orderMode,
-		'lastTimestamp': lastTimestamp,
-		'feed': selectedFeed,
-		'category': selectedCategory
-	}
-	[[ServerConnection alloc] postJSON:path withObject:data setDelegate:self];
+    if (noMoreResult)
+        return; // end of table, no more to load
+    var data = new Object;
+    data.orderMode = orderMode;
+    data.lastTimestamp = lastTimestamp;
+    data.feed = selectedFeed;
+    data.category = selectedCategory;
+
+    [[ServerConnection alloc] postJSON:path withObject:data setDelegate:self];
 }
 
 - (int)count
 {
-	return [[self arrangedObjects] count];
+    return [[self arrangedObjects] count];
 }
 
 - (id)objectAtIndex:(int)rowIndex
 {
-	return [[self arrangedObjects] objectAtIndex:rowIndex];
+    return [[self arrangedObjects] objectAtIndex:rowIndex];
 }
 
 - (void)prefetchHeadlines:(int)rowIndex
 {
-	if(noMoreResult) return; // end of table, no more to load
-	if(isPrefetching) return; // a request is in progress, ignore other
+    if (noMoreResult)
+        return; // end of table, no more to load
+    if (isPrefetching)
+        return; // a request is in progress, ignore other
 
-	if(rowIndex + 3 >= [self count])
-	{
-		isPrefetching = YES;
-		[self loadHeadlines];
-	}
+    if (rowIndex + 3 >= [self count])
+    {
+        isPrefetching = YES;
+        [self loadHeadlines];
+    }
 }
 
--(void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
+- (void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
 {
-	CPLog('HeadlineController.connection:%@ didReceiveData:%@', connection, '[HIDDEN]');
+    CPLog('HeadlineController.connection:%@ didReceiveData:%@', connection, '[HIDDEN]');
 
-	var headlines = [CPMutableArray array];
+    var headlines = [CPMutableArray array];
 
-	data = JSON.parse(data);
+    data = JSON.parse(data);
 
-	// last response return less then 20 article => no more article to load
-	if(data.count < 20) noMoreResult = YES;
+    // last response return less then 20 article => no more article to load
+    if (data.count < 20)
+        noMoreResult = YES;
 
-	var headline;
-	for (var i = 0; i < data.count; i++) {
-		headline = [[Headline alloc] initFromObject:data.objects[i]];
-		[self addObject:headline];
-	}
-	lastTimestamp = [[headline created] timeIntervalSince1970];
-	delete headline;
+    var headline;
+    for (var i = 0; i < data.count; i++)
+    {
+        headline = [[Headline alloc] initFromObject:data.objects[i]];
+        [self addObject:headline];
+    }
+    lastTimestamp = [[headline created] timeIntervalSince1970];
+    delete headline;
 
-	if(isPrefetching) isPrefetching = NO; // release lock
+    if (isPrefetching)
+        isPrefetching = NO; // release lock
 
-	[[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_LOADED object:nil];
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_LOADED object:nil];
 }
 @end

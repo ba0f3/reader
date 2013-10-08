@@ -11,7 +11,7 @@ import calendar
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     parent_id = db.Column(db.Integer, default=-1)
     name = db.Column(db.String(255), nullable=False)
     order_id = db.Column(db.Integer, default=None)
@@ -42,9 +42,9 @@ class Feed(db.Model):
 
 class UserFeed(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
-    feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id', ondelete='CASCADE'))
+    feed_id = db.Column(db.Integer, db.ForeignKey('feed.id', ondelete='CASCADE'))
     name = db.Column(db.String(255))
     purge_interval = db.Column(db.Integer, default=60)
     last_viewed = db.Column(db.DateTime)
@@ -68,7 +68,7 @@ class Entry(db.Model):
     created = db.Column(db.DateTime, nullable=False)
     author = db.Column(db.String(255))
     comments = db.Column(db.String(255))
-    feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'))
+    feed_id = db.Column(db.Integer, db.ForeignKey('feed.id', ondelete='CASCADE'))
 
     def __init__(self, feed_id, title, link, uuid, content, published, author=None, comments=None, created=None):
         content = html_sanitizer(content)
@@ -90,9 +90,9 @@ class Entry(db.Model):
 
 class UserEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    entry_id = db.Column(db.Integer, db.ForeignKey('entry.id'))
-    user_feed_id = db.Column(db.Integer, db.ForeignKey('user_feed.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    entry_id = db.Column(db.Integer, db.ForeignKey('entry.id', ondelete='CASCADE'))
+    user_feed_id = db.Column(db.Integer, db.ForeignKey('user_feed.id', ondelete='CASCADE'))
     unread = db.Column(db.Boolean, default=True)
     stared = db.Column(db.Boolean, default=False)
     created = db.Column(db.DateTime, nullable=False)
@@ -108,8 +108,8 @@ class UserEntry(db.Model):
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user_entry_id = db.Column(db.Integer, db.ForeignKey('user_entry.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    user_entry_id = db.Column(db.Integer, db.ForeignKey('user_entry.id', ondelete='CASCADE'))
     name = db.Column(db.String(255), nullable=False)
 
     def __init__(self, user_id, user_entry_id, name):
@@ -118,8 +118,8 @@ class Tag(db.Model):
         self.name = name
 
 roles_users = db.Table('roles_users',
-                       db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-                       db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+                       db.Column('user_id', db.Integer(), db.ForeignKey('user.id', ondelete='CASCADE')),
+                       db.Column('role_id', db.Integer(), db.ForeignKey('role.id', ondelete='CASCADE')))
 
 
 class Role(db.Model, RoleMixin):
@@ -177,4 +177,33 @@ class User(db.Model, UserMixin):
             'locale': self.locale,
             'timezone': self.timezone
         }
+
+
+class FeedUnreadCache(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    user_feed_id = db.Column(db.Integer, db.ForeignKey('user_feed.id', ondelete='CASCADE'))
+    value = db.Column(db.Integer, default=0, nullable=False)
+    last_update = db.Column(db.DateTime, nullable=False, default="NOW()")
+
+    def increase(self, value):
+        self.value += value
+
+    def decrease(self, value):
+        self.value -= value
+
+
+class CategoryUnreadCache(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id', ondelete='CASCADE'))
+    value = db.Column(db.Integer, default=0, nullable=False)
+    last_update = db.Column(db.DateTime, nullable=False)
+
+    def increase(self, value):
+        self.value += value
+
+    def decrease(self, value):
+        self.value -= value
+
 

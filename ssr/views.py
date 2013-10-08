@@ -65,24 +65,28 @@ def get_categories():
     user_id = current_user.id
 
     category_list = list()
-    category_ids = list()
-    categories = Category.query.filter_by(user_id=user_id).all()
-
-    for category in categories:
-        category_list.append({
-            'id': category.id,
-            'name': category.name,
-            'order_id': category.order_id,
-            'parent_id': category.parent_id})
-        category_ids.append(category.id)
-
-    sql = """SELECT f.id, uf.category_id, uf.name, uf.order_id, f.site_url
-    FROM user_feed AS uf
-    LEFT JOIN feed AS f ON f.id = uf.feed_id
-    WHERE uf.category_id IN (%s)
-    """ % (', '.join(str(x) for x in category_ids))
-
     feed_list = list()
+
+    sql = "SELECT c.id, c.name, c.order_id, c.parent_id, cuc.value AS unread \
+    FROM category AS c \
+    INNER JOIN category_unread_cache AS cuc ON c.id = cuc.category_id \
+    WHERE c.user_id=%s \
+    ORDER BY c.order_id" % user_id
+
+    rows = db.engine.execute(sql)
+    for row in rows:
+        category_list.append({
+            'id': row.id,
+            'name': row.name,
+            'order_id': row.order_id,
+            'parent_id': row.parent_id,
+            'unread': row.unread})
+
+    sql = "SELECT f.id, uf.category_id, uf.name, uf.order_id, f.site_url, fuc.value AS unread \
+    FROM user_feed AS uf \
+    INNER JOIN feed AS f ON f.id = uf.feed_id \
+    INNER JOIN feed_unread_cache AS fuc ON uf.id = fuc.user_feed_id"
+
     rows = db.engine.execute(sql)
     for row in rows:
         feed_list.append({
@@ -90,7 +94,8 @@ def get_categories():
             'name': row.name,
             'category_id': row.category_id,
             'order_id': row.order_id,
-            'site': row.site_url})
+            'site': row.site_url,
+            'unread': row.unread})
 
     return jsonify(categories=category_list, feeds=feed_list)
 

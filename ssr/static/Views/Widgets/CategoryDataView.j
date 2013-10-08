@@ -25,7 +25,7 @@ var CategoryDataViewImage = 1,
     	[_text setLineBreakMode:CPLineBreakByTruncatingTail];
     	[self addSubview:_text];
 
-    	_badge = [[CPTextField alloc] initWithFrame:CGRectMake(195.0, 0.0, 20.0, 25.0)];
+    	_badge = [[CPTextField alloc] initWithFrame:CGRectMake(195.0, 0.0, 25.0, 25.0)];
     	[_badge setVerticalAlignment:CPCenterVerticalTextAlignment];
     	[_badge setAlignment:CPCenterTextAlignment];
 		[_badge setBackgroundColor:[CPColor colorWithHexString:@"666"]];
@@ -48,7 +48,6 @@ var CategoryDataViewImage = 1,
 	{
 		[_badge setHidden:NO];
 		[_badge setStringValue:unread];
-		[_badge sizeToFit];
 	}
 	else
 	{
@@ -70,6 +69,6 @@ var CategoryDataViewImage = 1,
 		[_text setFrame:CGRectMake(0.0, 0.0, 160.0, 25.0)];
 		[_image setHidden:YES];
 	}
-	[self setUnread:189];
+	[self setUnread:[object unread]];
 }
 @end

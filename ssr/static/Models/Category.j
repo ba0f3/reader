@@ -6,7 +6,9 @@
 	CPString name @accessors;
 	int order @accessors;
 	int parent @accessors;
+	int unread @accessors;
 	CPMutableArray feeds @accessors;
+
 }
 
 - (id)initFromObject:(Object)obj
@@ -18,6 +20,7 @@
 		[self setName:obj.name];
 		[self setOrder:obj.order_id];
 		[self setParent:obj.parent_id];
+		[self setUnread:obj.unread];
 
 		feeds = [CPMutableArray array];
 		if(obj.feeds)

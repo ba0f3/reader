@@ -44,7 +44,7 @@
         /* handle images loading to resize view to correct size */
         var images = _container.querySelectorAll('img'),
             count = images.length;
-        function _countImage() {
+        var _countImage = function () {
             count--;
             if (count <= 0)
                 [self setFrameSize:CGSizeMake(_container.offsetWidth, _container.offsetHeight)];

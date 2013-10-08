@@ -71,17 +71,17 @@
 
 - (void)setEntry:(Entry)entry
 {
-	[siteUrl setUrl:entry.link];
-	[siteUrl setStringValue:entry.site];
+	[siteUrl setUrl:[entry link]];
+	[siteUrl setStringValue:[entry site]];
 	[siteUrl sizeToFit];
 
-	[title setStringValue:entry.title];
+	[title setStringValue:[entry title]];
 	[title sizeToFit];
 
-	[published setStringValue:entry.published];
+	[published setStringValue:[entry published]];
 	[published sizeToFit];
 
-	[content setHTMLString:entry.content];
+	[content setHTMLString:[entry content]];
 }
 @end
 

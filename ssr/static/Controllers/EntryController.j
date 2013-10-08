@@ -49,7 +49,7 @@ var path = @"/api/entry/%s",
 	{
 		if(entryCache.hasOwnProperty(entryId))
 	    {
-	        [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ENTRY_LOADED object:entryCache[entryId]];
+	        [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ENTRY_LOADED object:entryId];
 	    }
 	    else
 	    {

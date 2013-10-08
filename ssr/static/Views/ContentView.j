@@ -88,8 +88,8 @@
     CPLog('onEntryLoaded:%@', notification);
     var entryId = [notification object];
 
-    [entryView setEntry:[EntryController getCachedEntryWithId:entryId]];
     [self showEntryView];
+    [entryView setEntry:[EntryController getCachedEntryWithId:entryId]];
 }
 
 - (void)showWelcomeMessage

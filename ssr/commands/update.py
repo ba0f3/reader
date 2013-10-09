@@ -2,10 +2,9 @@ from flask.ext.script import Manager
 from ssr import logger
 import ssr.configs
 from ssr.models import *
+from time import mktime
 from datetime import datetime, timedelta
 import feedparser
-from dateutil import parser
-#from sqlalchemy.exc import IntegrityError
 import uuid
 import ssr.configs
 from urlparse import urlparse
@@ -28,7 +27,7 @@ def feeds():
 
         if feed.last_update_started is not None:
             if feed.last_update_started + timedelta(minutes=update_interval) > datetime.now():
-                logger.info("This feed is recently updated, ignore")
+                logger.info("This feed is recently fetched")
                 continue
 
         logger.debug("Setting update lock")
@@ -41,66 +40,81 @@ def feeds():
             logger.debug("Fetching XML data from: %s", feed.feed_url)
             d = feedparser.parse(feed.feed_url, etag=feed.last_etag, modified=feed.last_modified, agent="Breakfast https://github.com/VN-Nerds/breakfast")
 
-            if feed.last_published >= d.feed.published_parsed:
+            if not d.feed:
                 logger.debug("This feed has not been modified since last fetch")
-                continue
+            else:
+                try:
+                    last_published = d.feed.published_parsed if 'published_parsed' in d.feed else d.feed.updated_parsed if 'updated_parsed' in d.feed else None
+                    last_published = datetime.fromtimestamp(mktime(last_published))
+                except Exception:
+                    last_published = None
 
-            feed.last_published = d.feed.published_parsed
-            feed.last_etag = d.etag
-            feed.last_modified = d.modified
-
-            logger.debug("Found %s entries", len(d))
-            entry_ids = []
-            for entry in d.entries:
-                unique_id = uuid.uuid5(uuid.NAMESPACE_URL, str(entry.link))
-                e = Entry.query.filter_by(uuid=unique_id).first()
-                status = "exists"
-                if e is None:
-                    status = "done"
-                    title = entry.title
-                    link = entry.link
-                    content = entry.content[0].value if 'content' in entry else entry.summary
-                    published = parser.parse(entry.published)
-                    author = entry.author if 'author' in entry else None
-                    comments = entry.comments if 'comments' in entry else None
-                    try:
-                        e = Entry(feed.id, title, link, unique_id, content, published, author, comments)
-                        db.session.add(e)
-                        db.session.commit()
-                        entry_ids.append(e.id)
-                    except Exception as ex:
-                        status = "error"
-                        logger.error("Error: %s", ex)
-                        traceback.print_exc()
+                entry_ids = []
+                if last_published and feed.last_published and feed.last_published >= last_published:
+                    logger.debug("This feed has not been updated since last fetch")
                 else:
-                    entry_ids.append(e.id)
+                    feed.last_published = last_published
 
-                logger.debug("Processing entry [%s] with uuid [%s].... %s", entry.title, unique_id, status)
+                    feed.last_etag = d.etag if 'etag' in d else ""
+                    feed.last_modified = datetime.fromtimestamp(mktime(d.modified_parsed)) if 'modified_parsed' in d else None
 
-            # list of users that have current feed
-            if len(entry_ids) > 0:
-                user_feeds = UserFeed.query.filter_by(feed_id=feed.id).all()
-                logger.debug("Found %s subscribers for this feed", len(user_feeds))
-                for user_feed in user_feeds:
+                    logger.debug("Found %s entries", len(d))
 
-                    for entry_id in entry_ids:
-                        status = "exists"
-                        ue = UserEntry.query.filter_by(entry_id=entry_id, user_feed_id=user_feed.id, user_id=user_feed.user_id).first()
-                        if ue is None:
-                            status = "done"
-                            ue = UserEntry(user_feed.user_id, entry_id, user_feed.id)
-                            db.session.add(ue)
-                            db.session.commit()
-                        logger.debug("Adding entry [%s] for user [%s]... %s", entry_id, user_feed.user_id, status)
+                    if d.entries:
+                        for entry in d.entries:
+                            unique_id = uuid.uuid5(uuid.NAMESPACE_URL, str(entry.link))
+                            e = Entry.query.filter_by(uuid=unique_id).first()
+                            status = "exists"
+                            if e is None:
+                                status = "done"
+                                title = entry.title
+                                link = entry.link
+                                content = entry.content[0].value if 'content' in entry else entry.summary
+                                try:
+                                    published = entry.published_parsed if 'published_parsed' in entry else entry.updated_parsed if 'updated_parsed' in entry else None
+                                    published = datetime.fromtimestamp(mktime(published))
+                                except:
+                                    published = None
+                                author = entry.author if 'author' in entry else None
+                                comments = entry.comments if 'comments' in entry else None
+                                try:
+                                    e = Entry(feed.id, title, link, unique_id, content, published, author, comments)
+                                    db.session.add(e)
+                                    db.session.commit()
+                                    entry_ids.append(e.id)
+                                except Exception as ex:
+                                    status = "error"
+                                    logger.error("Error: %s", ex)
+                                    traceback.print_exc()
+                            else:
+                                entry_ids.append(e.id)
 
+                            logger.debug("Processing entry [%s] with uuid [%s].... %s", entry.title, unique_id, status)
+
+                # list of users that have current feed
+                if entry_ids:
+                    user_feeds = UserFeed.query.filter_by(feed_id=feed.id).all()
+                    logger.debug("Found %s subscribers for this feed", len(user_feeds))
+                    for user_feed in user_feeds:
+                        for entry_id in entry_ids:
+                            status = "exists"
+                            ue = UserEntry.query.filter_by(entry_id=entry_id, user_feed_id=user_feed.id, user_id=user_feed.user_id).first()
+                            if ue is None:
+                                status = "done"
+                                ue = UserEntry(user_feed.user_id, entry_id, user_feed.id)
+                                db.session.add(ue)
+                                db.session.commit()
+                            logger.debug("Adding entry [%s] for user [%s]... %s", entry_id, user_feed.user_id, status)
+
+                feed.last_error = ""  # clear error message
         except Exception as ex:
             logger.error("Error: %s", ex)
             traceback.print_exc()
-            feed.last_error = ex.message
+            feed.last_error = str(ex)
 
         logger.debug("Release update lock for: %s", feed.feed_url)
         feed.update_lock = False
-        feed.last_error = ""  # clear error message
+
         db.session.add(feed)
         db.session.commit()
 

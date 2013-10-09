@@ -29,11 +29,14 @@ class Feed(db.Model):
     feed_url = db.Column(db.Text)
     feed_url_hash = db.Column(db.String(56), unique=True)
     update_interval = db.Column(db.Integer)
-    last_updated = db.Column(db.DateTime)
-    last_update_started = db.Column(db.DateTime)
     update_lock = db.Column(db.Boolean, default=False)
-    last_error = db.Column(db.String(255))
     site_url = db.Column(db.String(255))
+    last_published = db.Column(db.DateTime)
+    last_modified = db.Column(db.DateTime)
+    last_etag = db.Column(db.String(255), nullable=False, default="")
+    last_update_started = db.Column(db.DateTime)
+    last_error = db.Column(db.String(255))
+    language = db.Column(db.String(10))
 
     def __init__(self, feed_url):
         self.feed_url = feed_url

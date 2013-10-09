@@ -26,8 +26,8 @@ def feeds():
         else:
             update_interval = feed.update_interval
 
-        if feed.last_updated is not None:
-            if feed.last_updated + timedelta(minutes=update_interval) > datetime.now():
+        if feed.last_update_started is not None:
+            if feed.last_update_started + timedelta(minutes=update_interval) > datetime.now():
                 logger.info("This feed is recently updated, ignore")
                 continue
 
@@ -39,7 +39,16 @@ def feeds():
 
         try:
             logger.debug("Fetching XML data from: %s", feed.feed_url)
-            d = feedparser.parse(feed.feed_url)
+            d = feedparser.parse(feed.feed_url, etag=feed.last_etag, modified=feed.last_modified, agent="Breakfast https://github.com/VN-Nerds/breakfast")
+
+            if feed.last_published >= d.feed.published_parsed:
+                logger.debug("This feed has not been modified since last fetch")
+                continue
+
+            feed.last_published = d.feed.published_parsed
+            feed.last_etag = d.etag
+            feed.last_modified = d.modified
+
             logger.debug("Found %s entries", len(d))
             entry_ids = []
             for entry in d.entries:
@@ -91,6 +100,7 @@ def feeds():
 
         logger.debug("Release update lock for: %s", feed.feed_url)
         feed.update_lock = False
+        feed.last_error = ""  # clear error message
         db.session.add(feed)
         db.session.commit()
 
@@ -126,6 +136,7 @@ def metadata(feed_id=None):
 
         feed.site_url = link
         feed.update_interval = update_interval
+        feed.language = d.feed.language
 
         db.session.add(feed)
         db.session.commit()

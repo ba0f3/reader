@@ -2,7 +2,7 @@ from flask import *
 from flask.ext.security import login_user, logout_user, current_user
 from flask.ext.babel import gettext
 from ssr import app, db, logger
-from ssr.models import User, Category
+from ssr.models import User, UserEntry
 from ssr.helpers import strip_html_tags
 import calendar
 from datetime import datetime
@@ -203,4 +203,31 @@ def get_entries(user_entry_id):
         }
         return jsonify(objects=entry)
     return make_error(gettext('Entry not found'), 404)
+
+
+@app.route('/api/markers', methods=['POST'])
+def marker():
+    if current_user.is_authenticated() is False:
+        return make_error(gettext('Unauthorized!'), 401, 401)
+
+    if request.json is None:
+        return make_error(gettext('Request method is not supported'), 400)
+
+    action = request.json['action'] if 'action' in request.json else None
+    type = request.json['type'] if 'type' in request.json else None
+    id = request.json['id'] if 'id' in request.json else None
+
+    if action is None or type is None or id is None:
+        return make_error(gettext('Required parameters are missing'))
+
+    if action == 'markAsRead':
+        if type == 'entry':
+            ue = UserEntry.query.get(id)
+            if ue:
+                ue.unread = 0
+                db.session.add(ue)
+                db.session.commit()
+                return jsonify(marked=True)
+            else:
+                return make_error(gettext('Entry not found'), 404)
 

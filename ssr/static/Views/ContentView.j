@@ -99,6 +99,7 @@
             feed = [category getFeedById:[entry feed]];
         [category decreaseUnread];
         [feed decreaseUnread];
+        [[EntryController sharedEntryController] markAsRead:[entry id]];
     }
 }
 

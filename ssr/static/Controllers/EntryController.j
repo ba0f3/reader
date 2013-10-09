@@ -4,6 +4,7 @@
 @import "../Models/Entry.j"
 
 var path = @"/api/entry/%s",
+    markerPath = @"/api/markers",
     entryControllerSharedInstance;
 @implementation EntryController : CPObject
 {
@@ -57,6 +58,15 @@ var path = @"/api/entry/%s",
             [[ServerConnection alloc] postJSON:[CPString stringWithFormat:path,entryId] withObject:nil setDelegate:self];
         }
     }
+}
+
+- (void)markAsRead:(int)entryId
+{
+    var data = new Object;
+    data.action = 'markAsRead';
+    data.type = 'entry';
+    data.id = entryId;
+    [[ServerConnection alloc] postJSON:[CPString stringWithFormat:markerPath] withObject:data setDelegate:nil];
 }
 
 - (void)connection:(CPURLConnection)connection didReceiveData:(CPString)data

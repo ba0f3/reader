@@ -71,7 +71,7 @@ def feeds():
                                 link = entry.link
                                 content = entry.content[0].value if 'content' in entry else entry.summary
                                 try:
-                                    published = entry.published_parsed if 'published_parsed' in entry else entry.updated_parsed if 'updated_parsed' in entry else None
+                                    published = entry.published_parsed if 'published_parsed' in entry else entry.updated_parsed if 'updated_parsed' in entry else datetime.now()
                                     published = datetime.fromtimestamp(mktime(published))
                                 except:
                                     published = None

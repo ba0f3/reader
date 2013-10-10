@@ -12,7 +12,8 @@ var NavigationAreaWidth = 250.0,
     HeadlineAreaWidth = 300.0;
 
 
-var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier";
+var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier",
+    SegmentedControlToolbarIdentifier = "SegmentedControlToolbarIdentifier" ;
 
 @implementation AppController : CPObject
 {
@@ -113,7 +114,7 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier";
 // Return an array of toolbar item identifier (the default toolbar items that are present in the toolbar)
 - (CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)aToolbar
 {
-   return [LogoToolbarItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier];
+   return [LogoToolbarItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier, SegmentedControlToolbarIdentifier];
 }
 
 - (CPToolbarItem)toolbar:(CPToolbar)aToolbar itemForItemIdentifier:(CPString)anItemIdentifier willBeInsertedIntoToolbar:(BOOL)aFlag
@@ -132,6 +133,23 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier";
         [toolbarItem setView:logo];
         [toolbarItem setMinSize:CGSizeMake(CGRectGetWidth([logo bounds]), CGRectGetHeight([logo bounds]))];
         [toolbarItem setMaxSize:CGSizeMake(CGRectGetWidth([logo bounds]), CGRectGetHeight([logo bounds]))];
+    }
+    else if (anItemIdentifier == SegmentedControlToolbarIdentifier)
+    {
+        var segment = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(80.0, 1.0, 100, 50)];
+        [segment setSegmentCount:3];
+        [segment setLabel:@"All" forSegment:0];
+
+        [segment setLabel:@"Unread" forSegment:1];
+        [segment setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/icn_unread.png" size:CGSizeMake(16.0, 16.0)] forSegment:1];
+
+        [segment setLabel:@"Focus" forSegment:2];
+        [segment setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/icn_focus.png" size:CGSizeMake(16.0, 16.0)] forSegment:2];
+        [toolbarItem setView:segment];
+        [toolbarItem setLabel:@"Filter"];
+        [toolbarItem setMinSize:CGSizeMake(CGRectGetWidth([segment bounds]), CGRectGetHeight([segment bounds]))];
+        [toolbarItem setMaxSize:CGSizeMake(CGRectGetWidth([segment bounds]), CGRectGetHeight([segment bounds]))];
+
     }
     return toolbarItem;
 }

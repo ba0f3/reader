@@ -11,6 +11,7 @@ var HeadlineItemViewWidth = 200.0,
 @implementation HeadlineView : CPView
 {
     HeadlineTableView tableView;
+    CPPopover filterPopover;
 
 }
 
@@ -75,11 +76,40 @@ var HeadlineItemViewWidth = 200.0,
         [searchButton setTarget:self];
         [searchButton setEnabled:YES];
 
-        [buttonBar setButtons:[searchButton]];
+        var filterButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 85, 25)];
+        [filterButton addItemWithTitle:@"All"];
+        [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/look.png" size:CGSizeMake(19, 11)]];
+        [filterButton addItemWithTitle:@"Stared"];
+        [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/star.png" size:CGSizeMake(16, 16)]];
+        [filterButton addItemWithTitle:@"Unread"];
+        [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/icn_unread.png" size:CGSizeMake(16, 16)]];
+        [filterButton addItemWithTitle:@"Unread First"];
+        [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/icn_focus.png" size:CGSizeMake(16, 16)]];
+        [filterButton setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset"];
+        [filterButton setPullsDown:NO];
+        [filterButton setTarget:self];
+        [filterButton setAction:@selector(filterChanged:)];
+        [filterButton setEnabled:YES];
+
+
+
+
+        [buttonBar setButtons:[searchButton, filterButton]];
 
     }
-
     return self;
+}
+
+- (void)filterChanged:(id)sender
+{
+    var filterMode = [sender selectedIndex];
+    [[HeadlineController sharedHeadlineController] setFilterMode:filterMode];
+}
+
+- (void)orderChanged:(id)sender
+{
+    var orderMode = [sender selectedIndex];
+    [[HeadlineController sharedHeadlineController] setOrderMode:orderMode];
 }
 
 - (void)onHeadlineLoaded:(CPNotification)notification
@@ -136,7 +166,8 @@ var HeadlineItemViewWidth = 200.0,
     CPLog('HeadlineView.tableView:%@ shouldSelectRow:%@', aTableView, rowIndex);
     CPLog("tableView:%@ shouldSelectRow:%@", aTableView, rowIndex);
     var headline = [[HeadlineController sharedHeadlineController] objectAtIndex:rowIndex];
-    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_SELECTED object:headline.id];
+    [headline setUnread:NO];
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_SELECTED object:headline];
     return YES;
 }
 @end

@@ -79,8 +79,8 @@
 - (void)onHeadlineSelected:(CPNotification)notification
 {
     CPLog('onHeadlineSelected:%@', notification);
-    var headlineId = [notification object];
-    [[EntryController sharedEntryController] loadEntry:headlineId];
+    var headline = [notification object];
+    [[EntryController sharedEntryController] loadEntry:[headline id]];
 }
 
 - (void)onEntryLoaded:(CPNotification)notification
@@ -95,6 +95,7 @@
     if ([entry unread] == YES)
     {
         [entry setUnread:NO];
+
         var category = [[CategoryController sharedCategoryController] getCategoryById:[entry category]],
             feed = [category getFeedById:[entry feed]];
         [category decreaseUnread];

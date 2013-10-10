@@ -10,12 +10,18 @@ RSSHeadlineOrderByNewestFirst = 0;
 RSSHeadlineOrderByOldestFirst = 1;
 RSSHeadlineOrderByTitle = 2;
 
+RSSHeadlineNoFilter = 0;
+RSSHeadlineFilterByStared = 1;
+RSSHeadlineFilterByUnread = 2;
+RSSHeadlineFilterByUnreadFirst = 3;
+
 @implementation HeadlineController : CPArrayController
 {
     int selectedCategory;
     int selectedFeed;
     int lastTimestamp;
-    int orderMode @accessors;
+    int orderMode;
+    int filterMode;
     BOOL isPrefetching;
     BOOL noMoreResult;
 
@@ -39,6 +45,7 @@ RSSHeadlineOrderByTitle = 2;
     if (self)
     {
         orderMode = RSSHeadlineOrderByNewestFirst;
+        filterMode = RSSHeadlineFilterByUnreadFirst;
         [self reset];
     }
     return self;
@@ -77,6 +84,7 @@ RSSHeadlineOrderByTitle = 2;
         return; // end of table, no more to load
     var data = new Object;
     data.orderMode = orderMode;
+    data.filterMode = filterMode;
     data.lastTimestamp = lastTimestamp;
     data.feed = selectedFeed;
     data.category = selectedCategory;
@@ -133,5 +141,32 @@ RSSHeadlineOrderByTitle = 2;
         isPrefetching = NO; // release lock
 
     [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_LOADED object:nil];
+}
+
+- (void)setFilterMode:(int)mode
+{
+    if (filterMode == mode)
+        return;
+    filterMode = mode;
+    lastTimestamp = 0;
+    isPrefetching = NO;
+    noMoreResult = NO;
+    [self setContent:[CPArray array]];
+
+    [self loadHeadlines];
+
+}
+
+- (void)setOrderMode:(int)mode
+{
+    if (orderMode == mode)
+        return;
+    orderMode = mode;
+    lastTimestamp = 0;
+    isPrefetching = NO;
+    noMoreResult = NO;
+    [self setContent:[CPArray array]];
+
+    [self loadHeadlines];
 }
 @end

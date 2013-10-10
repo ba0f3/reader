@@ -75,7 +75,7 @@ def get_categories():
     FROM category AS c \
     INNER JOIN category_unread_cache AS cuc ON c.id = cuc.category_id \
     WHERE c.user_id=%s \
-    ORDER BY c.order_id" % user_id
+    ORDER BY c.name, c.order_id" % user_id
 
     rows = db.engine.execute(sql)
     for row in rows:
@@ -108,7 +108,12 @@ def get_categories():
 def get_headlines():
     RSSHeadlineOrderByNewestFirst = 0
     RSSHeadlineOrderByOldestFirst = 1
-    RSSHeadlineOrderByTitle = 2
+    #RSSHeadlineOrderByTitle = 2
+
+    #RSSHeadlineNoFilter = 0
+    RSSHeadlineFilterByStared = 1
+    RSSHeadlineFilterByUnread = 2
+    RSSHeadlineFilterByUnreadFirst = 3
 
     if current_user.is_authenticated() is False:
         return make_error(gettext('Unauthorized!'), 401, 401)
@@ -120,12 +125,22 @@ def get_headlines():
     feed = request.json['feed'] if 'feed' in request.json else None
     last_timestamp = request.json['lastTimestamp'] if 'lastTimestamp' in request.json else None
     order_mode = request.json['orderMode'] if 'orderMode' in request.json else RSSHeadlineOrderByNewestFirst
+    filter_mode = request.json['filterMode'] if 'filterMode' in request.json else RSSHeadlineFilterByUnreadFirst
 
     user_id = current_user.id
 
     filters = list()
+    orders = list()
     extra_joins = list()
     filters.append("ue.user_id = %s" % user_id)
+
+    if filter_mode == RSSHeadlineFilterByUnreadFirst:
+        orders.append("ue.unread DESC")
+    elif filter_mode == RSSHeadlineFilterByUnread:
+        filters.append("ue.unread = 1")
+    elif filter_mode == RSSHeadlineFilterByStared:
+        filters.append("ue.stared = 1")
+
     if category > 0:
         extra_joins.append("INNER JOIN user_feed AS uf ON uf.id = ue.user_feed_id")
         filters.append("uf.category_id = %s" % category)
@@ -139,11 +154,14 @@ def get_headlines():
             filters.append("ue.created > '%s'" % datetime.utcfromtimestamp(last_timestamp))
     
     if order_mode == RSSHeadlineOrderByNewestFirst:
-        order_by = "ue.created DESC"
+        orders.append("ue.created DESC")
     elif order_mode == RSSHeadlineOrderByOldestFirst:
-        order_by = "ue.created ASC"
+        orders.append("ue.created ASC")
     else:
-        order_by = "e.title ASC"
+        orders.append("e.title ASC")
+
+
+
 
     headline_list = list()
     sql = "SELECT ue.id, e.title, f.site_url, e.content, ue.unread, ue.stared, ue.created \
@@ -152,7 +170,8 @@ def get_headlines():
         INNER JOIN feed AS f ON f.id = e.feed_id %s  \
         WHERE %s \
         ORDER BY %s \
-        LIMIT 20" % (' '.join(extra_joins), ' AND '.join(filters), order_by)
+        LIMIT 20" % (' '.join(extra_joins), ' AND '.join(filters), ', '.join(orders))
+
     rows = db.engine.execute(sql)
 
     for row in rows:

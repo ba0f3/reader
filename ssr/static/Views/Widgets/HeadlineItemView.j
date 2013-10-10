@@ -7,7 +7,10 @@
     CPTextField title;
     CPUrlLabel site;
     CPTextField intro;
-    id entry;
+    id _headline;
+    CPFont fontTitleBold;
+    CPFont fontTitle;
+    CPFont fontText;
 }
 
 - (void)initWithFrame:(CGRect)aFrame
@@ -17,29 +20,29 @@
     {
         [self setBackgroundColor:[CPColor colorWithHexString:"B5B5B5"]];
 
-        var fontDosisBold = [CPFont boldFontWithName:'Dosis' size:12],
-            fontDosis = [CPFont fontWithName:'Dosis' size:12],
-            fontOpenSans = [CPFont fontWithName:'Open Sans' size:12];
+        fontTitleBold = [CPFont boldFontWithName:'Dosis' size:13];
+        fontTitle = [CPFont fontWithName:'Dosis' size:13];
+        fontText = [CPFont fontWithName:'Dosis' size:12];
 
         [self setAutoresizingMask:CPViewWidthSizable];
         title = [[CPTextField alloc] initWithFrame:CGRectMake(2.0, 2.0, CGRectGetWidth([self bounds]), 24)];
         [title setAutoresizingMask:CPViewWidthSizable];
         [title setLineBreakMode:CPLineBreakByTruncatingTail];
         [title setTextColor:[CPColor colorWithHexString:@"333"]];
-        [title setTextShadowColor:[CPColor colorWithHexString:@"CCC"]];
-        [title setTextShadowOffset:CGSizeMake(1.0, 1.0)];
-        [title setFont:fontDosisBold];
+        //[title setTextShadowColor:[CPColor colorWithHexString:@"CCC"]];
+        //[title setTextShadowOffset:CGSizeMake(1.0, 0.5)];
+        [title setFont:fontTitleBold];
 
         site = [[CPUrlLabel alloc] initWithFrame:CGRectMake(2.0, 16.0, CGRectGetWidth([self bounds]), 24)];
         [site setAutoresizingMask:CPViewWidthSizable];
         [site setUrl:@""];
         [site sizeToFit];
-        [site setFont:fontDosis];
+        [site setFont:fontTitle];
 
-        intro = [[CPTextField alloc] initWithFrame:CGRectMake(2.0, 40.0, CGRectGetWidth([self bounds]), 56)];
+        intro = [[CPTextField alloc] initWithFrame:CGRectMake(2.0, 34.0, CGRectGetWidth([self bounds]), 60)];
         [intro setAutoresizingMask:CPViewWidthSizable];
         [intro setLineBreakMode:CPLineBreakByWordWrapping];
-        [intro setFont:fontDosis];
+        [intro setFont:fontTitle];
 
 
         [self addSubview:title];
@@ -49,16 +52,35 @@
     return self;
 }
 
-- (void)setObjectValue:(id)anEntry
+- (void)onHeadlineSelected:(CPNotification)notification
 {
-    if (!anEntry)
-        return;
-    entry = anEntry;
+    _headline = [notification object];
+    if ([_headline unread] == NO)
+        [title setFont:fontTitle];
+    else
+        [title setFont:fontTitleBold];
 
-    [title setStringValue:[anEntry title]];
-    [site setStringValue:[anEntry site]];
+}
+
+- (void)setObjectValue:(id)headline
+{
+    if (!headline)
+        return;
+    if (_headline == headline)
+        return;
+
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_HEADLINE_SELECTED object:_headline];
+    _headline = headline;
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onHeadlineSelected:) name:NOTIFICATION_HEADLINE_SELECTED object:_headline];
+
+    [title setStringValue:[headline title]];
+    [site setStringValue:[headline site]];
+    if ([_headline unread] == NO)
+        [title setFont:fontTitle];
+    else
+        [title setFont:fontTitleBold];
     [site sizeToFit];
-    [intro setStringValue:[anEntry intro]];
+    [intro setStringValue:[headline intro]];
 }
 
 - (void)setRowIndex:(int)aRow

@@ -50,6 +50,7 @@ import ssr.commands
 import ssr.views
 from ssr.models import User, Role
 
+
 # Flask-Script manager
 manager = ssr.commands.manager
 

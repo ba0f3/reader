@@ -1,11 +1,15 @@
+import calendar
+from datetime import datetime
+
 from flask import *
 from flask.ext.security import login_user, logout_user, current_user
 from flask.ext.babel import gettext
-from ssr import app, db, logger
-from ssr.models import User, UserEntry
+
+from ssr import app, db
+from ssr.models import User
 from ssr.helpers import strip_html_tags
-import calendar
-from datetime import datetime
+from ssr.repositories.user_entry import UserEntryRepository
+
 
 def make_error(message, error_code=0, status_code=500):
     response = jsonify(error={'message': message, 'code': error_code})
@@ -222,12 +226,10 @@ def marker():
 
     if action == 'markAsRead':
         if type == 'entry':
-            ue = UserEntry.query.get(id)
-            if ue:
-                ue.unread = 0
-                db.session.add(ue)
-                db.session.commit()
-                return jsonify(marked=True)
-            else:
+            result = UserEntryRepository.markAsRead(id)
+            if result == 404:
                 return make_error(gettext('Entry not found'), 404)
-
+            elif result == 304:
+                return jsonify(marked=False)
+            else:
+                return jsonify(marked=True)

@@ -52,6 +52,7 @@ class UserFeed(db.Model):
     purge_interval = db.Column(db.Integer, default=60)
     last_viewed = db.Column(db.DateTime)
     order_id = db.Column(db.Integer, default=1)
+    user_entries = relationship("UserEntry", backref="user_feed")
 
     def __init__(self, user_id, category_id, feed_id, name):
         self.user_id = user_id
@@ -189,6 +190,12 @@ class FeedUnreadCache(db.Model):
     value = db.Column(db.Integer, default=0, nullable=False)
     last_update = db.Column(db.DateTime, nullable=False)
 
+    def __init__(self, user_id, user_feed_id, value=0, last_update=0):
+        self.user_id = user_id
+        self.user_feed_id = user_feed_id
+        self.value = value
+        self.last_update = last_update
+
     def increase(self, value):
         self.value += value
 
@@ -202,6 +209,13 @@ class CategoryUnreadCache(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('category.id', ondelete='CASCADE'), unique=True)
     value = db.Column(db.Integer, default=0, nullable=False)
     last_update = db.Column(db.DateTime, nullable=False)
+
+    def __init__(self, user_id, category_id, value=0, last_update=0):
+        self.user_id = user_id
+        self.category_id = category_id
+        self.value = value
+        self.last_update = last_update
+
 
     def increase(self, value):
         self.value += value

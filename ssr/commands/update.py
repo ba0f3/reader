@@ -2,6 +2,7 @@ from flask.ext.script import Manager
 from ssr import logger
 import ssr.configs
 from ssr.models import *
+from ssr.repositories import EntryRepository, FeedRepository, UserEntryRepository
 from time import mktime
 from datetime import datetime, timedelta
 import feedparser
@@ -33,8 +34,7 @@ def feeds():
         logger.debug("Setting update lock")
         feed.update_lock = True
         feed.last_update_started = datetime.now()
-        db.session.add(feed)
-        db.session.commit()
+        FeedRepository.save(feed)
 
         try:
             logger.debug("Fetching XML data from: %s", feed.feed_url)
@@ -65,22 +65,22 @@ def feeds():
                             unique_id = uuid.uuid5(uuid.NAMESPACE_URL, str(entry.link))
                             e = Entry.query.filter_by(uuid=unique_id).first()
                             status = "exists"
-                            if e is None:
+                            if not e:
                                 status = "done"
                                 title = entry.title
                                 link = entry.link
                                 content = entry.content[0].value if 'content' in entry else entry.summary
+
                                 try:
                                     published = entry.published_parsed if 'published_parsed' in entry else entry.updated_parsed if 'updated_parsed' in entry else datetime.now()
                                     published = datetime.fromtimestamp(mktime(published))
                                 except:
                                     published = None
+
                                 author = entry.author if 'author' in entry else None
                                 comments = entry.comments if 'comments' in entry else None
                                 try:
-                                    e = Entry(feed.id, title, link, unique_id, content, published, author, comments)
-                                    db.session.add(e)
-                                    db.session.commit()
+                                    e = EntryRepository.create(feed.id, title, link, unique_id, content, published, author, comments)
                                     entry_ids.append(e.id)
                                 except Exception as ex:
                                     status = "error"
@@ -99,11 +99,9 @@ def feeds():
                         for entry_id in entry_ids:
                             status = "exists"
                             ue = UserEntry.query.filter_by(entry_id=entry_id, user_feed_id=user_feed.id, user_id=user_feed.user_id).first()
-                            if ue is None:
+                            if not ue:
                                 status = "done"
-                                ue = UserEntry(user_feed.user_id, entry_id, user_feed.id)
-                                db.session.add(ue)
-                                db.session.commit()
+                                UserEntryRepository.create(user_feed.user_id, entry_id, user_feed.id)
                             logger.debug("Adding entry [%s] for user [%s]... %s", entry_id, user_feed.user_id, status)
 
                 feed.last_error = ""  # clear error message
@@ -158,7 +156,6 @@ def metadata(feed_id=None):
 @UpdateCommand.command
 def unread():
     "Update global unread cache"
-
     logger.debug("Updating global unread cache:")
     sql = "INSERT INTO feed_unread_cache (user_id, user_feed_id, value, last_update) \
             SELECT user_id, user_feed_id, value, last_update FROM ( \

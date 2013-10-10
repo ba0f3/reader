@@ -11,5 +11,4 @@ class UserFeedRepository(BaseManager):
 
         FeedUnreadCacheRepository.create(uf.id, current_user.id)
 
-
         return uf

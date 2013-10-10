@@ -1,5 +1,4 @@
 from . import BaseManager
-from ssr import app
 from ssr.models import UserEntry, CategoryUnreadCache, FeedUnreadCache
 
 
@@ -9,6 +8,14 @@ class UserEntryRepository(BaseManager):
     def Create(*args):
         ue = UserEntry(args)
         UserEntryRepository.save(ue)
+
+        if ue.unread:
+            fuc = FeedUnreadCache.query.filter_by(user_feed_id=ue.user_feed_id).first()
+            fuc.inrease(1)
+            cuc = CategoryUnreadCache.query.filter_by(category_id=ue.user_feed.category_id).first()
+            cuc.inrease(1)
+
+            BaseManager.save(fuc, cuc)
         return ue
 
     @staticmethod

@@ -242,13 +242,6 @@ var SpecialFoldersViewHeight = 110.0;
     CPLog("NavigationView.outlineView:%@ shouldCollapseItem:%@", outlineView, item);
     if (outlineView == _specialFoldersViews && item == @"Special")
         return NO;
-}
-
-- (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item
-{
-    CPLog("NavigationView.outlineView:%@ shouldCollapseItem:%@", outlineView, item);
-    if (outlineView == _specialFoldersViews && item == @"Special")
-        return NO;
     return YES;
 }
 

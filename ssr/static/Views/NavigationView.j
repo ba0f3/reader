@@ -242,6 +242,13 @@ var SpecialFoldersViewHeight = 110.0;
     CPLog("NavigationView.outlineView:%@ shouldCollapseItem:%@", outlineView, item);
     if (outlineView == _specialFoldersViews && item == @"Special")
         return NO;
+}
+
+- (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item
+{
+    CPLog("NavigationView.outlineView:%@ shouldCollapseItem:%@", outlineView, item);
+    if (outlineView == _specialFoldersViews && item == @"Special")
+        return NO;
     return YES;
 }
 
@@ -256,6 +263,10 @@ var SpecialFoldersViewHeight = 110.0;
         if ([item className] == 'Category')
         {
             [dataView setStringValue:[item name]];
+            if ([outlineView isItemExpanded:item])
+                [dataView hideBadge];
+            else
+                [dataView showBadge];
         }
         if ([item className] == 'Feed')
         {

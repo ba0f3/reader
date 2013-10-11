@@ -83,4 +83,14 @@ var CategoryDataViewImage = 1,
     var item = [notification object];
     [self setUnread:[item unread]];
 }
+
+- (void)showBadge
+{
+    [_badge setHidden:NO];
+}
+
+- (void)hideBadge
+{
+    [_badge setHidden:YES];
+}
 @end

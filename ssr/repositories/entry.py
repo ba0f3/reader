@@ -6,7 +6,7 @@ class EntryRepository(BaseManager):
 
     @staticmethod
     def create(*args):
-        entry = Entry(args)
+        entry = Entry(*args)
 
         EntryRepository.save(entry)
 

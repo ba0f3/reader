@@ -5,7 +5,7 @@ from ssr.models import Feed
 class FeedRepository(BaseManager):
     @staticmethod
     def create(*args):
-        feed = Feed(args)
+        feed = Feed(*args)
 
         FeedRepository.save(feed)
 

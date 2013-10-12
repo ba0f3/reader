@@ -4,7 +4,7 @@ from ssr.models import Category, CategoryUnreadCache
 class CategoryUnreadCacheRepository(BaseManager):
     @staticmethod
     def create(*args):
-        cuc = CategoryUnreadCache(args)
+        cuc = CategoryUnreadCache(*args)
 
         CategoryUnreadCacheRepository.save(cuc)
 

@@ -6,7 +6,7 @@ class UserEntryRepository(BaseManager):
 
     @staticmethod
     def Create(*args):
-        ue = UserEntry(args)
+        ue = UserEntry(*args)
         UserEntryRepository.save(ue)
 
         if ue.unread:

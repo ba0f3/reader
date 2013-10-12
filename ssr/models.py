@@ -72,6 +72,8 @@ class Entry(db.Model):
     created = db.Column(db.DateTime, nullable=False)
     author = db.Column(db.String(255))
     comments = db.Column(db.String(255))
+    social_count = db.Column(db.Integer, default=0, nullable=False)
+    social_last_update = db.Column(db.DateTime)
     feed_id = db.Column(db.Integer, db.ForeignKey('feed.id', ondelete='CASCADE'))
 
     def __init__(self, feed_id, title, link, uuid, content, published, author=None, comments=None, created=None):

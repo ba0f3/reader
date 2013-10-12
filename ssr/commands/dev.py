@@ -2,6 +2,9 @@ from flask.ext.script import Manager
 from ssr import db
 from ssr.models import Category, User, Entry, UserFeed, Feed
 from ssr.helpers import import_opml, html_sanitizer
+from ssr.counter import count_all
+from multiprocessing import Pool
+
 
 DevelCommand = Manager(usage="Useful commands for development")
 
@@ -76,3 +79,9 @@ def sanitizer():
         entry.content_hash = Entry.hash_content(result)
         db.session.add(entry)
     db.session.commit()
+
+@DevelCommand.option('-u', '--url', dest='url', help="Url to receive counts")
+def count(url):
+    """Get social share count for an url"""
+
+    print count_all(url)

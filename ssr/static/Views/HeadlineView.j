@@ -1,9 +1,10 @@
-@import <AppKit/CPView.j>
+@import <GCKit/GCPopUpButton.j>
 @import "../Controllers/HeadlineController.j"
 @import "Widgets/HeadlineTableView.j"
 @import "Widgets/HeadlineItemView.j"
 @import "Widgets/CPFaviconView.j"
 @import "../Constants.j"
+@import "../LocalSetting.j"
 
 var HeadlineItemViewWidth = 200.0,
     HeadlineItemViewHeight = 100.0;
@@ -76,25 +77,37 @@ var HeadlineItemViewWidth = 200.0,
         [searchButton setTarget:self];
         [searchButton setEnabled:YES];
 
-        var filterButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 85, 25)];
-        [filterButton addItemWithTitle:@"All"];
+        var filterButton = [[GCPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
+        [filterButton setImagePosition:CPImageOnly];
+        [filterButton addItemWithTitle:@""];
         [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/look.png" size:CGSizeMake(19, 11)]];
+        [filterButton addItemWithTitle:@"All"];
         [filterButton addItemWithTitle:@"Stared"];
-        [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/star.png" size:CGSizeMake(16, 16)]];
         [filterButton addItemWithTitle:@"Unread"];
-        [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/icn_unread.png" size:CGSizeMake(16, 16)]];
         [filterButton addItemWithTitle:@"Unread First"];
-        [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/icn_focus.png" size:CGSizeMake(16, 16)]];
         [filterButton setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset"];
-        [filterButton setPullsDown:NO];
+        [filterButton setPullsDown:YES];
+        [filterButton setSelectedIndex:[LocalSetting get:@"filterMode"] || RSSHeadlineFilterByUnread];
         [filterButton setTarget:self];
         [filterButton setAction:@selector(filterChanged:)];
         [filterButton setEnabled:YES];
 
+        var orderButton = [[GCPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
+        [orderButton setImagePosition:CPImageOnly];
+        [orderButton addItemWithTitle:@""];
+        [[orderButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/sort.png" size:CGSizeMake(16, 16)]];
+        [orderButton addItemWithTitle:@"Newest First"];
+        [orderButton addItemWithTitle:@"Oldest First"];
+        [orderButton addItemWithTitle:@"Title"];
+        [orderButton setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset"];
+        [orderButton setPullsDown:YES];
+        [orderButton setSelectedIndex:[LocalSetting get:@"orderMode"] || RSSHeadlineOrderByNewestFirst];
+        [orderButton setTarget:self];
+        [orderButton setAction:@selector(orderChanged:)];
+        [orderButton setEnabled:YES];
 
 
-
-        [buttonBar setButtons:[searchButton, filterButton]];
+        [buttonBar setButtons:[searchButton, filterButton, orderButton]];
 
     }
     return self;
@@ -103,13 +116,15 @@ var HeadlineItemViewWidth = 200.0,
 - (void)filterChanged:(id)sender
 {
     var filterMode = [sender selectedIndex];
-    [[HeadlineController sharedHeadlineController] setFilterMode:filterMode];
+    [LocalSetting setObject:filterMode forKey:@"filterMode"];
+    [[HeadlineController sharedHeadlineController] applyFilters];
 }
 
 - (void)orderChanged:(id)sender
 {
     var orderMode = [sender selectedIndex];
-    [[HeadlineController sharedHeadlineController] setOrderMode:orderMode];
+    [LocalSetting setObject:orderMode forKey:@"orderMode"];
+    [[HeadlineController sharedHeadlineController] applyFilters];
 }
 
 - (void)onHeadlineLoaded:(CPNotification)notification

@@ -13,7 +13,9 @@ var NavigationAreaWidth = 250.0,
 
 
 var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier",
-    SegmentedControlToolbarIdentifier = "SegmentedControlToolbarIdentifier" ;
+    EntryFilterToolbarIdentifier = "EntryFilterToolbarIdentifier",
+    EntryOrderToolbarIdentifier = "EntryOrderToolbarIdentifier",
+    SearchControlToolbarIdentifier = "SearchControlToolbarIdentifier";
 
 @implementation AppController : CPObject
 {
@@ -41,6 +43,7 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier",
     var toolbar = [[CPToolbar alloc] initWithIdentifier:"Toolbar"];
     [toolbar setDelegate:self];
     [toolbar setVisible:YES];
+
     [theWindow setToolbar:toolbar];
 
     [self createLayout];
@@ -108,13 +111,13 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier",
 // Return an array of toolbar item identifier (all the toolbar items that may be present in the toolbar)
 - (CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)aToolbar
 {
-   return [CPToolbarFlexibleSpaceItemIdentifier, LogoToolbarItemIdentifier];
+   return [CPToolbarFlexibleSpaceItemIdentifier, LogoToolbarItemIdentifier, SearchControlToolbarIdentifier];
 }
 
 // Return an array of toolbar item identifier (the default toolbar items that are present in the toolbar)
 - (CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)aToolbar
 {
-   return [LogoToolbarItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier, SegmentedControlToolbarIdentifier];
+   return [CPToolbarFlexibleSpaceItemIdentifier, SearchControlToolbarIdentifier];
 }
 
 - (CPToolbarItem)toolbar:(CPToolbar)aToolbar itemForItemIdentifier:(CPString)anItemIdentifier willBeInsertedIntoToolbar:(BOOL)aFlag
@@ -123,34 +126,25 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier",
     [toolbarItem setTarget:self];
     if (anItemIdentifier == LogoToolbarItemIdentifier)
     {
-        var logo = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-        [logo setStringValue:@"Doda Reader"];
-        [logo setFont:[CPFont boldFontWithName:'Fugaz One' size:20]];
-        [logo setTextColor:[CPColor colorWithHexString:@"ccc"]];
-        [logo setTextShadowColor:[CPColor colorWithHexString:@"222"]];
-        [logo setTextShadowOffset:CGSizeMake(0.5, 1.0)];
-        [logo sizeToFit];
-        [toolbarItem setView:logo];
-        [toolbarItem setMinSize:CGSizeMake(CGRectGetWidth([logo bounds]), CGRectGetHeight([logo bounds]))];
-        [toolbarItem setMaxSize:CGSizeMake(CGRectGetWidth([logo bounds]), CGRectGetHeight([logo bounds]))];
+        var view = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+        [view setStringValue:@"Doda Reader"];
+        [view setFont:[CPFont boldFontWithName:'Fugaz One' size:20]];
+        [view setTextColor:[CPColor colorWithHexString:@"ccc"]];
+        [view setTextShadowColor:[CPColor colorWithHexString:@"222"]];
+        [view setTextShadowOffset:CGSizeMake(0.5, 1.0)];
+        [view sizeToFit];
     }
-    else if (anItemIdentifier == SegmentedControlToolbarIdentifier)
+    else if (anItemIdentifier == SearchControlToolbarIdentifier)
     {
-        var segment = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(80.0, 1.0, 100, 50)];
-        [segment setSegmentCount:3];
-        [segment setLabel:@"All" forSegment:0];
-
-        [segment setLabel:@"Unread" forSegment:1];
-        [segment setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/icn_unread.png" size:CGSizeMake(16.0, 16.0)] forSegment:1];
-
-        [segment setLabel:@"Focus" forSegment:2];
-        [segment setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/icn_focus.png" size:CGSizeMake(16.0, 16.0)] forSegment:2];
-        [toolbarItem setView:segment];
-        [toolbarItem setLabel:@"Filter"];
-        [toolbarItem setMinSize:CGSizeMake(CGRectGetWidth([segment bounds]), CGRectGetHeight([segment bounds]))];
-        [toolbarItem setMaxSize:CGSizeMake(CGRectGetWidth([segment bounds]), CGRectGetHeight([segment bounds]))];
+        var view = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160, 29)];
+        [view setPlaceholderString:@"Enter keyword"];
+        [toolbarItem setLabel:@"Search"];
 
     }
+
+    [toolbarItem setView:view];
+    [toolbarItem setMinSize:CGSizeMake(CGRectGetWidth([view bounds]), CGRectGetHeight([view bounds]))];
+    [toolbarItem setMaxSize:CGSizeMake(CGRectGetWidth([view bounds]), CGRectGetHeight([view bounds]))];
     return toolbarItem;
 }
 @end

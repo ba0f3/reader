@@ -106,14 +106,14 @@ def get_categories():
 
 @app.route('/api/headlines', methods=['POST'])
 def get_headlines():
-    RSSHeadlineOrderByNewestFirst = 0
-    RSSHeadlineOrderByOldestFirst = 1
-    #RSSHeadlineOrderByTitle = 2
+    RSSHeadlineOrderByNewestFirst = 1
+    RSSHeadlineOrderByOldestFirst = 2
+    #RSSHeadlineOrderByTitle = 3
 
-    #RSSHeadlineNoFilter = 0
-    RSSHeadlineFilterByStared = 1
-    RSSHeadlineFilterByUnread = 2
-    RSSHeadlineFilterByUnreadFirst = 3
+    #RSSHeadlineNoFilter = 1
+    RSSHeadlineFilterByStared = 2
+    RSSHeadlineFilterByUnread = 3
+    RSSHeadlineFilterByUnreadFirst = 4
 
     if current_user.is_authenticated() is False:
         return make_error(gettext('Unauthorized!'), 401, 401)

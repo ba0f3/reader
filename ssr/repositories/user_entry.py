@@ -5,7 +5,7 @@ from ssr.models import UserEntry, CategoryUnreadCache, FeedUnreadCache
 class UserEntryRepository(BaseManager):
 
     @staticmethod
-    def Create(*args):
+    def create(*args):
         ue = UserEntry(*args)
         UserEntryRepository.save(ue)
 

@@ -290,5 +290,17 @@ def category():
                 return jsonify(delete=True, id=id)
             except:
                 return make_error(gettext('Error! please try again later.'))
+    elif action == 'rename':
+        id = request.json['id'] if 'id' in request.json else None
+        name = request.json['name'] if 'name' in request.json else None
+
+        if not id and not name:
+            return make_error(gettext('Required parameters are missing.'))
+
+        category = Category.query.get(id)
+        category.name = name
+        CategoryRepository.save(category)
+
+        return jsonify(rename=True, id=id, name=name)
 
     return make_error(gettext('Bad request.'))

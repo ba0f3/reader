@@ -5,9 +5,10 @@ var sharedCategoryDialogInstace;
 
 @implementation CategoryDialog : CPWindow
 {
-    CPTextField nameLabel, nameField;
+    CPTextField header, nameLabel, nameField;
     BOOL isNew;
-    Category _category
+    Category _category;
+    CPButton okButton;
 }
 
 + (CategoryDialog)sharedCategoryDialog
@@ -27,12 +28,8 @@ var sharedCategoryDialogInstace;
         [self setMinSize:CGSizeMake(300, 100)];
         [self setMaxSize:CGSizeMake(600, 400)];
 
-        var contentView = [self contentView],
-            header = [[CPTextField alloc] initWithFrame:CGRectMake(10, 20, 200, 30)];
-        if (isNew)
-            [header setStringValue:@"Create New Category"];
-        else
-            [header setStringValue:@"Rename Category"];
+        var contentView = [self contentView];
+        header = [[CPTextField alloc] initWithFrame:CGRectMake(10, 20, 200, 30)];
 
         [header setFont:[CPFont boldSystemFontOfSize:14]];
         [contentView addSubview:header]
@@ -47,20 +44,19 @@ var sharedCategoryDialogInstace;
         [nameField setEditable:YES];
         [nameField setBezeled:YES];
         [nameField setAutoresizingMask:CPViewWidthSizable];
-        if (!isNew)
-            [nameField setPlaceholderString:[_category name]];
+
         [contentView addSubview:nameField];
 
-        var buttonHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"min-size" forClass:CPButton].height,
-            okButton = [[CPButton alloc] initWithFrame:CGRectMake(270, 110, 70, buttonHeight)];
-        [okButton setTitle:"Create"];
+        var buttonHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"min-size" forClass:CPButton].height;
+        okButton = [[CPButton alloc] initWithFrame:CGRectMake(270, 110, 70, buttonHeight)];
+        [okButton setTitle:@"Create"];
         [okButton setTarget:self];
         [okButton setTag:1];
         [okButton setAction:@selector(closeSheet:)];
         [okButton setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
 
         var cancelButton = [[CPButton alloc] initWithFrame:CGRectMake(190, 110, 70, buttonHeight)];
-        [cancelButton setTitle:"Cancel"];
+        [cancelButton setTitle:@"Cancel"];
         [cancelButton setTarget:self];
         [cancelButton setTag:0];
         [cancelButton setAction:@selector(closeSheet:)];
@@ -76,13 +72,21 @@ var sharedCategoryDialogInstace;
 - (void)displaySheet:(id)sender
 {
     isNew = YES;
+    [header setStringValue:@"Create New Category"];
+    [nameField setPlaceholderString:@""];
+    [nameField setStringValue:@""];
+    [okButton setTitle:@"Create"];
     [CPApp beginSheet:self modalForWindow:[CPApp mainWindow] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
 }
 
 - (void)displaySheet:(id)sender forEdit:(id)category
 {
+    [header setStringValue:@"Rename Category"];
     isNew = NO;
     _category = category;
+    [nameField setPlaceholderString:[_category name]];
+    [nameField setStringValue:[_category name]];
+    [okButton setTitle:@"Save"];
     [CPApp beginSheet:self modalForWindow:[CPApp mainWindow] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
 }
 
@@ -101,9 +105,9 @@ var sharedCategoryDialogInstace;
         }
         else
         {
-            if ([nameField stringValue] != [_category name])
+            if ([nameField stringValue] != '' && [nameField stringValue] != [_category name])
             {
-                [[CategoryController sharedCategoryController] updateCategoryWithNewName:[nameField stringValue]];
+                [[CategoryController sharedCategoryController] updateCategory:_category withNewName:[nameField stringValue]];
             }
         }
     }

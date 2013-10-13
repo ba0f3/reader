@@ -48,6 +48,10 @@ var categoryCollectionPath = @"/api/categories",
     {
         [self handleDeleteResponse:data];
     }
+    else if (data.rename)
+    {
+        [self handleRenameResponse:data];
+    }
 }
 
 - (void)loadCategories
@@ -100,6 +104,26 @@ var categoryCollectionPath = @"/api/categories",
     [categories addObject:category];
     var index = [categories indexOfObject:category];
     [_categoryMap setValue:index forKey:'id_' + [category id]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
+}
+
+- (void)updateCategory:(id)category withNewName:(CPString)newName
+{
+    if (newName == '')
+        return;
+
+    var data = new Object;
+    data.action = 'rename';
+    data.id = [category id];
+    data.name = newName;
+    [[ServerConnection alloc] postJSON:categoryPath withObject:data setDelegate:self];
+}
+
+- (void)handleRenameResponse:(id)data
+{
+    var cid = data.id,
+        category = [self getCategoryById:cid];
+    [category setName:data.name];
     [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
 }
 

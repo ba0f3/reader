@@ -15,9 +15,7 @@ var SpecialFoldersViewHeight = 110.0;
     CPOutlineView _categoriesViews;
     CPScrollView scrollView;
 
-    CPButtonBar addButton;
-    CPButtonBar minusButton;
-    CPButtonBar popUpButton;
+    CPButtonBar addButton, editButton, removeButton;
 
     id _selectedItem;
 }
@@ -101,20 +99,18 @@ var SpecialFoldersViewHeight = 110.0;
         [addButton setTarget:self];
         [addButton setEnabled:YES];
 
-        minusButton = [CPButtonBar minusButton];
-        [minusButton setAction:@selector(removeItem:)];
-        [minusButton setTarget:self];
-        [minusButton setEnabled:NO];
+        removeButton = [CPButtonBar minusButton];
+        [removeButton setAction:@selector(removeItem:)];
+        [removeButton setTarget:self];
+        [removeButton setEnabled:NO];
 
-        popUpButton = [CPButtonBar actionPopupButton];
-        [popUpButton setTarget:self];
-        [popUpButton setEnabled:YES];
-        [popUpButton addItemsWithTitles: [CPArray arrayWithObjects:
-                    @"Choose an action:",
-                    nil]
-        ];
-        [popUpButton setAutoresizingMask:CPViewMaxYMargin];
-        //[popUpButton sizeToFit];
+        editButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
+        [editButton setBordered:NO];
+        [editButton setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/edit.png" size:CGSizeMake(16, 16)]];
+        [editButton setImagePosition:CPImageOnly];
+        [editButton setAction:@selector(editItem:)];
+        [editButton setTarget:self];
+        [editButton setEnabled:NO];
 
         var refreshButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
         [refreshButton setBordered:NO];
@@ -124,7 +120,7 @@ var SpecialFoldersViewHeight = 110.0;
         [refreshButton setTarget:self];
         [refreshButton setEnabled:YES];
 
-        [buttonBar setButtons:[addButton, minusButton, popUpButton, refreshButton]];
+        [buttonBar setButtons:[addButton, editButton, removeButton, refreshButton]];
 
     [defaultCenter addObserver:self selector:@selector(categoryOutlineViewFrameChanged:) name:CPViewFrameDidChangeNotification object:_categoriesViews];
        [defaultCenter addObserver:self selector:@selector(categoryOutlineViewFrameChanged:) name:CPViewBoundsDidChangeNotification object:_categoriesViews];
@@ -133,10 +129,21 @@ var SpecialFoldersViewHeight = 110.0;
     return self;
 }
 
+- (void)editItem:(id)sender
+{
+    if (!_selectedItem)
+        return;
+
+    if ([_selectedItem className] == 'Category')
+    {
+        [[CategoryDialog sharedCategoryDialog] displaySheet:self forEdit:_selectedItem];
+    }
+}
+
 - (void)removeItem:(id)sender
 {
     if (!_selectedItem)
-        return
+        return;
 
     var message,
         informativeText;
@@ -172,6 +179,11 @@ var SpecialFoldersViewHeight = 110.0;
     {
         // not implement yet
     }
+}
+
+- (voi)onDoubleClick:(id)sender
+{
+    console.log(sender);
 }
 
 - (void)onCategoryLoaded:(CPNotification)notification
@@ -331,12 +343,16 @@ var SpecialFoldersViewHeight = 110.0;
     CPLog("NavigationView.outlineView:%@ shouldSelectItem:%@", outlineView, item);
     if (outlineView == _specialFoldersViews)
     {
+        [removeButton setEnabled:NO];
+        [editButton setEnabled:NO];
+
         if (item == @"Special")
             return NO;
     }
     else
     {
-        [minusButton setEnabled:YES];
+        [removeButton setEnabled:YES];
+        [editButton setEnabled:YES];
         if ([item className] == 'Category')
         {
             [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_SELECTED object:item.id];

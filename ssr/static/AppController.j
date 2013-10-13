@@ -25,7 +25,7 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier",
     ContentView contentArea;
     CPView contentView
     CPSplitView verticalSplitter;
-    CPWindow theWindow
+    CPWindow theWindow;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification

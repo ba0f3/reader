@@ -9,6 +9,6 @@ class CategoryRepository(BaseManager):
         category = Category(*args)
         CategoryRepository.save(category)
 
-        CategoryUnreadCacheRepository.create(category.id, current_user.id)
+        CategoryUnreadCacheRepository.create(current_user.id, category.id)
 
         return category

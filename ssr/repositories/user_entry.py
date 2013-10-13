@@ -11,9 +11,9 @@ class UserEntryRepository(BaseManager):
 
         if ue.unread:
             fuc = FeedUnreadCache.query.filter_by(user_feed_id=ue.user_feed_id).first()
-            fuc.inrease(1)
+            fuc.increase(1)
             cuc = CategoryUnreadCache.query.filter_by(category_id=ue.user_feed.category_id).first()
-            cuc.inrease(1)
+            cuc.increase(1)
 
             BaseManager.save(fuc, cuc)
         return ue

@@ -1,6 +1,7 @@
 @import <AppKit/CPView.j>
 @import "../Constants.j"
 @import "../Controllers/CategoryController.j"
+@import "CategoryDialog.j"
 @import "Widgets/FolderItemView.j"
 @import "Widgets/CategoryHeader.j"
 @import "Widgets/CategoryDataView.j"
@@ -13,6 +14,12 @@ var SpecialFoldersViewHeight = 110.0;
     CPOutlineView _specialFoldersViews;
     CPOutlineView _categoriesViews;
     CPScrollView scrollView;
+
+    CPButtonBar addButton;
+    CPButtonBar minusButton;
+    CPButtonBar popUpButton;
+
+    id _selectedItem;
 }
 
 - (void)initWithFrame:(CGRect)aFrame
@@ -89,17 +96,17 @@ var SpecialFoldersViewHeight = 110.0;
         [self addSubview:buttonBar];
 
 
-        var addButton = [CPButtonBar plusButton];
-        [addButton setAction:@selector(showSubscribePopup:)];
+        addButton = [CPButtonBar plusButton];
+        [addButton setAction:@selector(displayCategorySheet:)];
         [addButton setTarget:self];
         [addButton setEnabled:YES];
 
-        var minusButton = [CPButtonBar minusButton];
-        [minusButton setAction:@selector(remove:)];
+        minusButton = [CPButtonBar minusButton];
+        [minusButton setAction:@selector(removeItem:)];
         [minusButton setTarget:self];
-        [minusButton setEnabled:YES];
+        [minusButton setEnabled:NO];
 
-        var popUpButton = [CPButtonBar actionPopupButton];
+        popUpButton = [CPButtonBar actionPopupButton];
         [popUpButton setTarget:self];
         [popUpButton setEnabled:YES];
         [popUpButton addItemsWithTitles: [CPArray arrayWithObjects:
@@ -124,6 +131,47 @@ var SpecialFoldersViewHeight = 110.0;
     }
 
     return self;
+}
+
+- (void)removeItem:(id)sender
+{
+    if (!_selectedItem)
+        return
+
+    var message,
+        informativeText;
+    if ([_selectedItem className] == 'Category')
+    {
+        if ([[_selectedItem feeds] count] == 0)
+            [[CategoryController sharedCategoryController] deleteCategoryWithId:_selectedItem.id];
+        else
+        {
+            message = "Can not remove this category!";
+            informativeText = "This category contains one or more feeds, please remove them first."
+            var alert = [CPAlert alertWithMessageText:message defaultButton:@"Close" alternateButton:nil otherButton:nil informativeTextWithFormat:informativeText];
+            [alert beginSheetModalForWindow:[CPApp mainWindow]];
+        }
+
+    }
+    else if ([_selectedItem className] == 'Feed')
+    {
+        message = "Do you want to unsubscribe this feed?";
+        informativeText = [CPString stringWithFormat:@"You are going to unsubscribe feed %@ from %@.", _selectedItem.name, _selectedItem.site];
+        var alert = [CPAlert alertWithMessageText:message defaultButton:@"Unsubscribe" alternateButton:@"Cancel" otherButton:"Turn off" informativeTextWithFormat:informativeText];
+        [alert beginSheetModalForWindow:[CPApp mainWindow] modalDelegate:self didEndSelector:@selector(didEndSheetRemoveItem:returnCode:contextInfo:) contextInfo:nil];
+    }
+}
+
+- (void)didEndSheetRemoveItem:(CPWindow)aSheet returnCode:(int)returnCode contextInfo:(id)contextInfo
+{
+    if (returnCode == CPOKButton) // 1
+    {
+        [[CategoryController sharedCategoryController] unsubscribeFeedWithId:[_selectedItem id]];
+    }
+    else if (returnCode == 2) // turn off feed
+    {
+        // not implement yet
+    }
 }
 
 - (void)onCategoryLoaded:(CPNotification)notification
@@ -151,6 +199,11 @@ var SpecialFoldersViewHeight = 110.0;
         }
         [_scrollDocumentView setFrameSize:CGSizeMake(CGRectGetWidth([_scrollDocumentView bounds]), CGRectGetHeight(frame))];
     }
+}
+
+- (void)displayCategorySheet:(id)sender
+{
+    [[CategoryDialog sharedCategoryDialog] displaySheet:self];
 }
 
 - (id)outlineView:(CPOutlineView)outlineView child:(int)index ofItem:(id)item
@@ -283,6 +336,7 @@ var SpecialFoldersViewHeight = 110.0;
     }
     else
     {
+        [minusButton setEnabled:YES];
         if ([item className] == 'Category')
         {
             [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_SELECTED object:item.id];
@@ -292,6 +346,7 @@ var SpecialFoldersViewHeight = 110.0;
         {
             [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_FEED_SELECTED object:item.id];
         }
+        _selectedItem = item;
     }
     return YES;
 }

@@ -3,7 +3,8 @@
 @import "../Models/Category.j"
 
 
-var path = @"/api/categories",
+var categoryCollectionPath = @"/api/categories",
+    categoryPath = @"/api/category",
     categoryControllerSharedInstance;
 @implementation CategoryController : CPObject
 {
@@ -20,7 +21,6 @@ var path = @"/api/categories",
     return categoryControllerSharedInstance;
 }
 
-
 - (id)init
 {
     self = [super init];
@@ -32,16 +32,31 @@ var path = @"/api/categories",
     return self;
 }
 
-- (void)loadCategories
-{
-    [[ServerConnection alloc] postJSON:path withObject:nil setDelegate:self];
-}
-
 - (void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
 {
-    CPLog('CategoryController.connection:%@ didReceiveData:%@', connection, '[HIDDEN]');
 
     data = JSON.parse(data);
+    if (data.load)
+    {
+        [self handleCategoriesResponse:data];
+    }
+    else if (data.create)
+    {
+        [self handleCreateResponse:data];
+    }
+    else if (data.delete)
+    {
+        [self handleDeleteResponse:data];
+    }
+}
+
+- (void)loadCategories
+{
+    [[ServerConnection alloc] postJSON:categoryCollectionPath withObject:nil setDelegate:self];
+}
+
+- (void)handleCategoriesResponse:(id)data
+{
     var feed_arrays = [];
 
     for (var i = 0; i < data.feeds.length; i++)
@@ -63,10 +78,44 @@ var path = @"/api/categories",
         var category = [[Category alloc] initFromObject:data.categories[i]];
 
         [categories addObject:category];
-        var index = [categories count] - 1;
+        var index = [categories indexOfObject:category];
         [_categoryMap setValue:index forKey:'id_' + [category id]];
     }
 
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
+}
+
+- (void)createCategoryWithName:(CPString)name
+{
+    var data = new Object;
+    data.action = 'create';
+    data.name = name
+    [[ServerConnection alloc] postJSON:categoryPath withObject:data setDelegate:self];
+
+}
+
+- (void)handleCreateResponse:(id)data
+{
+    var category = [[Category alloc] initFromObject:data.category];
+    [categories addObject:category];
+    var index = [categories indexOfObject:category];
+    [_categoryMap setValue:index forKey:'id_' + [category id]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
+}
+
+- (void)deleteCategoryWithId:(int)categoryId
+{
+    var data = new Object;
+    data.action = 'delete';
+    data.id = categoryId
+    [[ServerConnection alloc] postJSON:categoryPath withObject:data setDelegate:self];
+}
+
+- (void)handleDeleteResponse:(id)data
+{
+    var cid = data.id;
+    [categories removeObject:[self getCategoryById:cid]];
+    [_categoryMap removeObjectForKey:'id_' + cid];
     [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
 }
 

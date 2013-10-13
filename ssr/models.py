@@ -216,8 +216,7 @@ class CategoryUnreadCache(db.Model):
         self.user_id = user_id
         self.category_id = category_id
         self.value = value
-        self.last_update = last_update
-
+        self.last_update = last_update or datetime.datetime.now()
 
     def increase(self, value):
         self.value += value

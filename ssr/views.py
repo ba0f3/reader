@@ -6,9 +6,9 @@ from flask.ext.security import login_user, logout_user, current_user
 from flask.ext.babel import gettext
 
 from ssr import app, db
-from ssr.models import User
+from ssr.models import User, Category
 from ssr.helpers import strip_html_tags
-from ssr.repositories.user_entry import UserEntryRepository
+from ssr.repositories import UserEntryRepository, CategoryRepository
 
 
 def make_error(message, error_code=0, status_code=500):
@@ -101,7 +101,7 @@ def get_categories():
             'site': row.site_url,
             'unread': row.unread})
 
-    return jsonify(categories=category_list, feeds=feed_list)
+    return jsonify(load=True, categories=category_list, feeds=feed_list)
 
 
 @app.route('/api/headlines', methods=['POST'])
@@ -160,9 +160,6 @@ def get_headlines():
     else:
         orders.append("e.title ASC")
 
-
-
-
     headline_list = list()
     sql = "SELECT ue.id, e.title, f.site_url, e.content, ue.unread, ue.stared, ue.created \
         FROM user_entry AS ue \
@@ -181,9 +178,8 @@ def get_headlines():
             'site': row.site_url,
             'intro': strip_html_tags(row.content).strip(),  # TODO: tao intro ngay khi update feed
             'created': calendar.timegm(row.created.utctimetuple()),
-            #'published': calendar.timegm(row.published.utctimetuple()),
             'unread': row.unread,
-            'stared': row.stared,
+            'stared': row.stared
         }
         headline_list.append(entry)
     return jsonify(count=len(headline_list), objects=headline_list)
@@ -252,3 +248,47 @@ def marker():
                 return jsonify(marked=False)
             else:
                 return jsonify(marked=True)
+
+@app.route('/api/category', methods=['POST'])
+def category():
+    if current_user.is_authenticated() is False:
+        return make_error(gettext('Unauthorized!'), 401, 401)
+
+    if request.json is None:
+        return make_error(gettext('Request method is not supported'), 400)
+
+    action = request.json['action'] if 'action' in request.json else None
+
+    if action == 'create':
+        name = request.json['name'] if 'name' in request.json else None
+        if not name:
+            return make_error(gettext('Category name is required.'))
+        else:
+            try:
+                category = CategoryRepository.create(current_user.id, name)
+                return jsonify(create=True, category={
+                    'id': category.id,
+                    'name': category.name,
+                    'order_id': category.order_id,
+                    'parent_id': category.parent_id,
+                    'unread': 0})
+            except:
+                return make_error(gettext('Error! please try again later.'))
+    elif action == 'delete':
+        id = request.json['id'] if 'id' in request.json else None
+        if not id:
+            return make_error(gettext('Category ID is required.'))
+        else:
+            try:
+                category = Category.query.get(id)
+                if category.user_feeds:
+                    return make_error(gettext('Please unsubscribe feeds belong category %s first.', category.name))
+
+                db.session.delete(category)
+                db.session.commit()
+
+                return jsonify(delete=True, id=id)
+            except:
+                return make_error(gettext('Error! please try again later.'))
+
+    return make_error(gettext('Bad request.'))

@@ -116,7 +116,7 @@ var SpecialFoldersViewHeight = 110.0;
         [refreshButton setBordered:NO];
         [refreshButton setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/refresh.png" size:CGSizeMake(16, 16)]];
         [refreshButton setImagePosition:CPImageOnly];
-        [refreshButton setAction:@selector(remove:)];
+        [refreshButton setAction:@selector(refresh:)];
         [refreshButton setTarget:self];
         [refreshButton setEnabled:YES];
 
@@ -167,6 +167,12 @@ var SpecialFoldersViewHeight = 110.0;
         var alert = [CPAlert alertWithMessageText:message defaultButton:@"Unsubscribe" alternateButton:@"Cancel" otherButton:"Turn off" informativeTextWithFormat:informativeText];
         [alert beginSheetModalForWindow:[CPApp mainWindow] modalDelegate:self didEndSelector:@selector(didEndSheetRemoveItem:returnCode:contextInfo:) contextInfo:nil];
     }
+}
+
+- (void)refresh:(id)sender
+{
+    [[CategoryController sharedCategoryController] clearData];
+    [[CategoryController sharedCategoryController] loadCategories];
 }
 
 - (void)didEndSheetRemoveItem:(CPWindow)aSheet returnCode:(int)returnCode contextInfo:(id)contextInfo

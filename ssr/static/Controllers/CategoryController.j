@@ -143,6 +143,12 @@ var categoryCollectionPath = @"/api/categories",
     [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
 }
 
+- (void)clearData
+{
+    categories = [CPMutableArray array];
+    _categoryMap = [CPMutableDictionary dictionary];
+}
+
 - (Category)getCategoryById:(int)_id
 {
     var index = [_categoryMap valueForKey:'id_' + _id];

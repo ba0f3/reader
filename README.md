@@ -28,6 +28,20 @@ $ ./manage.py db upgrade<br>
 $ ./manage.py runserver<br>
 
 
+TODO
+----
+
+* Subscribe to a feed
+* Special folders
+* Mark entry as read/unread, started
+* Archive old entries
+* Tags support
+* Search entries
+* Sharing
+* User management
+* Preferences
+
+
 License
 -------
 This library is free software; you can redistribute it and/or modify it under

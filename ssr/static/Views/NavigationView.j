@@ -1,7 +1,9 @@
 @import <AppKit/CPView.j>
 @import "../Constants.j"
 @import "../Controllers/CategoryController.j"
+@import "../Controllers/FeedController.j"
 @import "CategoryDialog.j"
+@import "FeedDialog.j"
 @import "Widgets/FolderItemView.j"
 @import "Widgets/CategoryHeader.j"
 @import "Widgets/CategoryDataView.j"
@@ -94,10 +96,20 @@ var SpecialFoldersViewHeight = 110.0;
         [self addSubview:buttonBar];
 
 
-        addButton = [CPButtonBar plusButton];
-        [addButton setAction:@selector(displayCategorySheet:)];
+        addButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
+        [addButton addItemWithTitle:nil];
+        [[addButton lastItem] setImage:[[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-plus" forClass:[CPButtonBar class]]];
+        [addButton setImagePosition:CPImageOnly];
+        [addButton setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset"];
+        [addButton setPullsDown:YES];
         [addButton setTarget:self];
+        [addButton setAction:@selector(newItem:)];
         [addButton setEnabled:YES];
+        [addButton addItemsWithTitles: [CPArray arrayWithObjects:
+                    @"New Category...",
+                    @"New Subscription...",
+                    nil]
+        ];
 
         removeButton = [CPButtonBar minusButton];
         [removeButton setAction:@selector(removeItem:)];
@@ -129,6 +141,14 @@ var SpecialFoldersViewHeight = 110.0;
     return self;
 }
 
+- (void)newItem:(id)sender
+{
+    if ([sender selectedIndex] == 1)
+        [[CategoryDialog sharedCategoryDialog] displaySheet:self];
+    else
+        [[FeedDialog sharedFeedDialog] displaySheet:self];
+
+}
 - (void)editItem:(id)sender
 {
     if (!_selectedItem)
@@ -182,7 +202,7 @@ var SpecialFoldersViewHeight = 110.0;
     // 0 OK 1 cancel 2 turn off
     if (returnCode == 0)
     {
-        [[CategoryController sharedCategoryController] unsubscribeFeedWithId:[_selectedItem id]];
+        [[FeedController sharedFeedController] unsubscribeFeedWithId:[_selectedItem id]];
     }
     else if (returnCode == 2) // turn off feed
     {
@@ -220,11 +240,6 @@ var SpecialFoldersViewHeight = 110.0;
         }
         [_scrollDocumentView setFrameSize:CGSizeMake(CGRectGetWidth([_scrollDocumentView bounds]), CGRectGetHeight(frame))];
     }
-}
-
-- (void)displayCategorySheet:(id)sender
-{
-    [[CategoryDialog sharedCategoryDialog] displaySheet:self];
 }
 
 - (id)outlineView:(CPOutlineView)outlineView child:(int)index ofItem:(id)item

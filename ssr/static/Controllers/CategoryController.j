@@ -52,10 +52,6 @@ var categoryCollectionPath = @"/api/categories",
     {
         [self handleRenameResponse:data];
     }
-    else if (data.unsubscribe)
-    {
-        [self handleUnsubscribeResponse:data];
-    }
 }
 
 - (void)loadCategories
@@ -144,26 +140,6 @@ var categoryCollectionPath = @"/api/categories",
     var cid = data.id;
     [categories removeObject:[self getCategoryById:cid]];
     [_categoryMap removeObjectForKey:'id_' + cid];
-    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
-}
-
-- (void)unsubscribeFeedWithId:(int)feedId
-{
-    var data = new Object;
-    data.action = 'unsubscribe';
-    data.id = feedId
-    [[ServerConnection alloc] postJSON:categoryPath withObject:data setDelegate:self];
-}
-
-- (void)handleUnsubscribeResponse:(id)data
-{
-    var cid = data.cid,
-        fid = data.fid,
-        category = [self getCategoryById:cid],
-        feed = [category getFeedById:fid];
-    [[category feeds] removeObject:feed];
-    [category updateUnreadCount];
-
     [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
 }
 

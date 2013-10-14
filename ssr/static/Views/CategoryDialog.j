@@ -29,8 +29,8 @@ var sharedCategoryDialogInstace;
         [self setMaxSize:CGSizeMake(600, 400)];
 
         var contentView = [self contentView];
-        header = [[CPTextField alloc] initWithFrame:CGRectMake(10, 20, 200, 30)];
 
+        header = [[CPTextField alloc] initWithFrame:CGRectMake(10, 20, 200, 30)];
         [header setFont:[CPFont boldSystemFontOfSize:14]];
         [contentView addSubview:header]
 
@@ -72,7 +72,7 @@ var sharedCategoryDialogInstace;
 - (void)displaySheet:(id)sender
 {
     isNew = YES;
-    [header setStringValue:@"Create New Category"];
+    [header setStringValue:@"Add Category:"];
     [nameField setPlaceholderString:@""];
     [nameField setStringValue:@""];
     [okButton setTitle:@"Create"];
@@ -81,18 +81,13 @@ var sharedCategoryDialogInstace;
 
 - (void)displaySheet:(id)sender forEdit:(id)category
 {
-    [header setStringValue:@"Rename Category"];
+    [header setStringValue:@"Rename Category:"];
     isNew = NO;
     _category = category;
     [nameField setPlaceholderString:[_category name]];
     [nameField setStringValue:[_category name]];
     [okButton setTitle:@"Save"];
     [CPApp beginSheet:self modalForWindow:[CPApp mainWindow] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
-}
-
-- (void)closeCategorySheet:(id)sender
-{
-    [CPApp endSheet:self returnCode:[sender tag]];
 }
 
 - (void)didEndSheet:(CPWindow)aSheet returnCode:(int)returnCode contextInfo:(id)contextInfo

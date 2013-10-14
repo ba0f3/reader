@@ -177,7 +177,10 @@ var SpecialFoldersViewHeight = 110.0;
 
 - (void)didEndSheetRemoveItem:(CPWindow)aSheet returnCode:(int)returnCode contextInfo:(id)contextInfo
 {
-    if (returnCode == CPOKButton) // 1
+    console.log(returnCode);
+
+    // 0 OK 1 cancel 2 turn off
+    if (returnCode == 0)
     {
         [[CategoryController sharedCategoryController] unsubscribeFeedWithId:[_selectedItem id]];
     }

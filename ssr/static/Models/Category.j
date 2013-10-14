@@ -56,4 +56,16 @@
     [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ITEM_UNREAD_UPDATED object:self];
 }
 
+- (void)updateUnreadCount
+{
+    var _unead = 0;
+    for (var i = 0; i < [feeds count]; i++)
+    {
+        var item = [feeds objectAtIndex:i];
+        _unead += [item unread];
+    }
+    [self setUnread:_unead];
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ITEM_UNREAD_UPDATED object:self];
+}
+
 @end

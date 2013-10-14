@@ -6,9 +6,9 @@ from flask.ext.security import login_user, logout_user, current_user
 from flask.ext.babel import gettext
 
 from ssr import app, db
-from ssr.models import User, Category
+from ssr.models import User, Category, UserFeed
 from ssr.helpers import strip_html_tags
-from ssr.repositories import UserEntryRepository, CategoryRepository
+from ssr.repositories import UserEntryRepository, CategoryRepository, CategoryUnreadCacheRepository
 
 
 def make_error(message, error_code=0, status_code=500):
@@ -263,33 +263,34 @@ def category():
         name = request.json['name'] if 'name' in request.json else None
         if not name:
             return make_error(gettext('Category name is required.'))
-        else:
-            try:
-                category = CategoryRepository.create(current_user.id, name)
-                return jsonify(create=True, category={
-                    'id': category.id,
-                    'name': category.name,
-                    'order_id': category.order_id,
-                    'parent_id': category.parent_id,
-                    'unread': 0})
-            except:
-                return make_error(gettext('Error! please try again later.'))
+
+        try:
+            category = CategoryRepository.create(current_user.id, name)
+            return jsonify(create=True, category={
+                'id': category.id,
+                'name': category.name,
+                'order_id': category.order_id,
+                'parent_id': category.parent_id,
+                'unread': 0})
+        except:
+            return make_error(gettext('Error! please try again later.'))
     elif action == 'delete':
         id = request.json['id'] if 'id' in request.json else None
         if not id:
             return make_error(gettext('Category ID is required.'))
-        else:
-            try:
-                category = Category.query.get(id)
-                if category.user_feeds:
-                    return make_error(gettext('Please unsubscribe feeds belong category %s first.', category.name))
 
-                db.session.delete(category)
-                db.session.commit()
+        try:
+            category = Category.query.get(id)
+            if category.user_feeds:
+                return make_error(gettext('Please unsubscribe feeds belong category %s first.', category.name))
 
-                return jsonify(delete=True, id=id)
-            except:
-                return make_error(gettext('Error! please try again later.'))
+            db.session.delete(category)
+            db.session.commit()
+
+            return jsonify(delete=True, id=id)
+        except:
+            return make_error(gettext('Error! please try again later.'))
+
     elif action == 'rename':
         id = request.json['id'] if 'id' in request.json else None
         name = request.json['name'] if 'name' in request.json else None
@@ -302,5 +303,23 @@ def category():
         CategoryRepository.save(category)
 
         return jsonify(rename=True, id=id, name=name)
+
+    elif action == 'unsubscribe':
+        id = request.json['id'] if 'id' in request.json else None
+
+        if not id:
+            return make_error(gettext('Feed ID is required.'))
+
+        user_feed = UserFeed.query.filter_by(feed_id=id, user_id=current_user.id).first()
+
+        if not user_feed:
+            return make_error(gettext('Feed not found.'))
+
+        db.session.delete(user_feed)
+        db.session.commit()
+
+        CategoryUnreadCacheRepository.update(user_feed.category_id)
+
+        return jsonify(unsubscribe=True, fid=id, cid=user_feed.category_id)
 
     return make_error(gettext('Bad request.'))

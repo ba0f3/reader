@@ -134,7 +134,7 @@ var SpecialFoldersViewHeight = 110.0;
 
         [buttonBar setButtons:[addButton, editButton, removeButton, refreshButton]];
 
-    [defaultCenter addObserver:self selector:@selector(categoryOutlineViewFrameChanged:) name:CPViewFrameDidChangeNotification object:_categoriesViews];
+        [defaultCenter addObserver:self selector:@selector(categoryOutlineViewFrameChanged:) name:CPViewFrameDidChangeNotification object:_categoriesViews];
        [defaultCenter addObserver:self selector:@selector(categoryOutlineViewFrameChanged:) name:CPViewBoundsDidChangeNotification object:_categoriesViews];
     }
 
@@ -391,12 +391,25 @@ var SpecialFoldersViewHeight = 110.0;
     return YES;
 }
 
+- (CPIndexSet)outlineView:(id)outlineView selectionIndexesForProposedSelection:(CPIndexSet)anIndexSet
+{
+    // hack for showSelectItem does not work
+    var item = [outlineView itemAtRow:[anIndexSet firstIndex]];
+    [self outlineView:outlineView shouldSelectItem:item];
+    return anIndexSet;
+}
+
 - (CPView)outlineView:(id)outlineView viewForTableColumn:(CPTableColumn)tableColumn item:(id)item
 {
     CPLog("NavigationView.outlineView:%@ viewForTableColumn:%@ item:%@", outlineView, tableColumn, item);
     if (outlineView == _categoriesViews)
     {
-        return [[CategoryDataView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 25.0)];
+        var dataView = [[CategoryDataView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 25.0)];
+        if ([item unread] > 0)
+            [dataView showBadge];
+        else
+            [dataView hideBadge];
+        return dataView
     }
 }
 @end

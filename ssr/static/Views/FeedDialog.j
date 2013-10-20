@@ -21,6 +21,9 @@ var sharedFeedDialogInstace;
 
 - (id)init
 {
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onFeedAuthRequired:) name:NOTIFICATION_FEED_AUTH_REQUIRED object:nil];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onFeedDialogShouldClose:) name:NOTIFICATION_FEED_DIALOG_SHOULD_CLOSE object:nil];
+
     if (self = [super initWithContentRect:CGRectMake(0, 0, 400, 170) styleMask:CPTitledWindowMask | CPResizableWindowMask])
     {
         [self setMinSize:CGSizeMake(300, 100)];
@@ -58,25 +61,13 @@ var sharedFeedDialogInstace;
         [categoryField setSelectedIndex:0];
         for (var i = 0; i < [categories count]; i++)
         {
-            var category = [categories objectAtIndex:i];
-            [categoryField addItemWithTitle:[category name]];
+            var category = [categories objectAtIndex:i],
+                item = [[CPMenuItem alloc] init];
+            [item setTitle:[category name]];
+            [item setTag:[category id]];
+            [categoryField addItem:item];
         }
         [contentView addSubview:categoryField];
-
-        /*nameLabel = [[CPTextField alloc] initWithFrame:CGRectMake(20, 90, 80, 30)];
-        [nameLabel setHidden:NO];
-        [nameLabel setStringValue:@"Name"];
-        [nameLabel setVerticalAlignment:CPCenterVerticalTextAlignment];
-        [nameLabel setAlignment:CPRightTextAlignment];
-        [contentView addSubview:nameLabel];
-
-        nameField = [[CPTextField alloc] initWithFrame:CGRectMake(110, 90, 250, 30)];
-        [nameField setPlaceholderString:@"Optional"];
-        [nameField setEditable:YES];
-        [nameField setBezeled:YES];
-        [nameField setHidden:NO];
-        [nameField setAutoresizingMask:CPViewWidthSizable];
-        [contentView addSubview:nameField];*/
 
         authenticationLabel = [[CPTextField alloc] initWithFrame:CGRectMake(20, 130, 80, 30)];
         [authenticationLabel setStringValue:@"Authentication"];
@@ -122,22 +113,37 @@ var sharedFeedDialogInstace;
     return self;
 }
 
+- (void)onFeedAuthRequired:(CPNotification)notification
+{
+    [self showAuthentication];
+}
+
+- (void)onFeedDialogShouldClose:(CPNotification)notification
+{
+    [self closeSheet:nil];
+}
 - (void)toggleAuthentication
 {
     if ([authenticationLabel isHidden])
-    {
-        [authenticationLabel setHidden:NO];
-        [usernameField setHidden:NO];
-        [passwordField setHidden:NO];
-        [self setFrameSize:CGSizeMake(400, 220)];
-    }
+        [self showAuthentication];
     else
-    {
-        [authenticationLabel setHidden:YES];
-        [usernameField setHidden:YES];
-        [passwordField setHidden:YES];
-        [self setFrameSize:CGSizeMake(400, 170)];
-    }
+        [self hideAuthentication];
+}
+
+- (void)showAuthentication
+{
+    [authenticationLabel setHidden:NO];
+    [usernameField setHidden:NO];
+    [passwordField setHidden:NO];
+    [self setFrameSize:CGSizeMake(400, 220)];
+}
+
+- (voi)hideAuthentication
+{
+    [authenticationLabel setHidden:YES];
+    [usernameField setHidden:YES];
+    [passwordField setHidden:YES];
+    [self setFrameSize:CGSizeMake(400, 170)];
 }
 
 - (void)displaySheet:(id)sender
@@ -167,7 +173,17 @@ var sharedFeedDialogInstace;
     {
         if (isNew)
         {
-            [[FeedController sharedFeedController] subscribeFeedWithUrl:[urlField stringValue]];
+            var category_id = [[categoryField selectedItem] tag],
+                url = [urlField stringValue];
+            if (category_id < 1 || url == "")
+            {
+                var alert = [CPAlert alertWithError:@"Required fields are missing"];
+                [alert setInformativeText:@"An valid feed URL and Category are required"];
+                [alert runModal];
+                return;
+            }
+
+            [[FeedController sharedFeedController] subscribeFeedWithUrl:url setCategory:category_id];
         }
         else
         {
@@ -178,10 +194,7 @@ var sharedFeedDialogInstace;
         }
     }
     else
-    {
-        //[aSheet orderOut:self];
-        [self toggleAuthentication];
-    }
+        [aSheet orderOut:self];
 }
 
 - (void)closeSheet:(id)sender

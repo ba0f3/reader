@@ -146,6 +146,7 @@ def metadata(feed_id=None):
 
             update_interval = update_periods[update_period] / update_frequency
 
+        feed.name = d.feed.title
         feed.site_url = link
         feed.update_interval = update_interval
         feed.language = d.feed.language

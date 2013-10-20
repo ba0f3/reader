@@ -6,9 +6,11 @@ from flask.ext.security import login_user, logout_user, current_user
 from flask.ext.babel import gettext
 
 from ssr import app, db
-from ssr.models import User, Category, UserFeed
+from ssr.models import User, Category, UserFeed, Feed, Entry, UserEntry, FeedUnreadCache
 from ssr.helpers import strip_html_tags
-from ssr.repositories import UserEntryRepository, CategoryRepository, CategoryUnreadCacheRepository
+from ssr.commands import update
+from ssr.repositories import UserEntryRepository, UserFeedRepository, CategoryRepository, CategoryUnreadCacheRepository, FeedUnreadCacheRepository, FeedRepository
+import feedparser
 
 
 def make_error(message, error_code=0, status_code=500):
@@ -304,6 +306,75 @@ def category():
 
         return jsonify(rename=True, id=id, name=name)
 
+    return make_error(gettext('Bad request.'))
+
+
+@app.route('/api/feed', methods=['POST'])
+def feed():
+    if current_user.is_authenticated() is False:
+        return make_error(gettext('Unauthorized!'), 401, 401)
+
+    if request.json is None:
+        return make_error(gettext('Request method is not supported'), 400)
+
+    action = request.json['action'] if 'action' in request.json else None
+
+    if action == 'subscribe':
+        url = request.json['url'] if 'url' in request.json else None
+        category_id = request.json['cid'] if 'cid' in request.json else None
+        #username = request.json['username'] if 'username' in request.json else None
+        #password = request.json['password'] if 'password' in request.json else None
+
+        url_hash = Feed.get_url_hash(url)
+        print url_hash
+
+        feed = Feed.query.filter_by(feed_url_hash=url_hash).first()
+
+        if feed:
+            uf = UserFeed.query.filter_by(feed_id=feed.id, user_id=current_user.id).first()
+            if uf:
+                return jsonify(subscribe=True, error=500, message=gettext("You are already subscribe to this feed"))
+            else:
+                uf = UserFeedRepository.create(current_user.id, category_id, feed.id, feed.name)
+
+                entries = Entry.query.filter_by(feed_id=feed.id).all()
+                for entry in entries:
+                    UserEntryRepository.create(current_user.id, entry.id, uf.id)
+
+                fuc = FeedUnreadCache.query.filter_by(user_feed_id=uf.id).first()
+                fuc.value = len(entries)
+                fuc.last_update = datetime.now()
+                FeedUnreadCacheRepository.save(fuc)
+
+                CategoryUnreadCacheRepository.update(category_id)
+
+                return jsonify(subscribe=True, feed={
+                    'id': feed.id,
+                    'name': feed.name,
+                    'category_id': category_id,
+                    'order_id': uf.order_id,
+                    'site': feed.site_url,
+                    'unread': fuc.value})
+        else:
+            d = feedparser.parse(url, agent="Breakfast https://github.com/VN-Nerds/breakfast")
+            if d.bozo == 1:  # error
+                print d.status
+                if 'status' in d and d.status == 401:  # password protected
+                    return jsonify(subscribe=True, error=401, message=gettext("Password protected feeds are not supported yet."))
+                else:
+                    return jsonify(subscribe=True, error=500)
+
+            feed = FeedRepository.create(url)
+            update.metadata(feed.id)
+            uf = UserFeedRepository.create(current_user.id, category_id, feed.id, feed.name)
+            return jsonify(subscribe=True, feed={
+                'id': feed.id,
+                'name': feed.name,
+                'category_id': category_id,
+                'order_id': uf.order_id,
+                'site': feed.site_url,
+                'unread': 0})
+
     elif action == 'unsubscribe':
         id = request.json['id'] if 'id' in request.json else None
 
@@ -321,5 +392,3 @@ def category():
         CategoryUnreadCacheRepository.update(user_feed.category_id)
 
         return jsonify(unsubscribe=True, fid=id, cid=user_feed.category_id)
-
-    return make_error(gettext('Bad request.'))

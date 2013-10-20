@@ -42,14 +42,14 @@ var CategoryDataViewImage = 1,
 
 - (void)setUnread:(int)unread
 {
-    if (unread)
+    if (unread != nil && unread != undefined && unread > 0)
     {
-        [_badge setHidden:NO];
         [_badge setStringValue:unread];
+        [self showBadge];
     }
     else
     {
-        [_badge setHidden:YES];
+        [self hideBadge];
     }
 }
 

@@ -26,6 +26,7 @@ class Category(db.Model):
 
 class Feed(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
     feed_url = db.Column(db.Text)
     feed_url_hash = db.Column(db.String(56), unique=True)
     update_interval = db.Column(db.Integer)
@@ -40,7 +41,11 @@ class Feed(db.Model):
 
     def __init__(self, feed_url):
         self.feed_url = feed_url
-        self.feed_url_hash = hashlib.sha224(feed_url).hexdigest()
+        self.feed_url_hash = Feed.get_url_hash(feed_url)
+
+    @staticmethod
+    def get_url_hash(url):
+        return hashlib.sha224(url).hexdigest()
 
 
 class UserFeed(db.Model):
@@ -52,6 +57,9 @@ class UserFeed(db.Model):
     purge_interval = db.Column(db.Integer, default=60)
     last_viewed = db.Column(db.DateTime)
     order_id = db.Column(db.Integer, default=1)
+    auth_type = db.Column(db.Boolean)
+    login = db.Column(db.String(255))
+    password = db.Column(db.String(255))
     user_entries = relationship("UserEntry", backref="user_feed")
 
     def __init__(self, user_id, category_id, feed_id, name):
@@ -223,5 +231,3 @@ class CategoryUnreadCache(db.Model):
 
     def decrease(self, value):
         self.value -= value
-
-

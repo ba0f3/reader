@@ -1,3 +1,5 @@
+@import "../Constants.j"
+
 var feedPath = @"/api/feed",
     feedControllerSharedInstance;
 
@@ -7,7 +9,7 @@ var feedPath = @"/api/feed",
 
 }
 
-+ (FeedController)sharedCategoryController
++ (FeedController)sharedFeedController
 {
     if (feedControllerSharedInstance == nil)
     {
@@ -29,9 +31,9 @@ var feedPath = @"/api/feed",
 {
 
     data = JSON.parse(data);
-    if (data.create)
+    if (data.subscribe)
     {
-        [self handleCreateResponse:data];
+        [self handleSubscribeResponse:data];
     }
     else if (data.edit)
     {
@@ -43,17 +45,36 @@ var feedPath = @"/api/feed",
     }
 }
 
-- (void)subscribeFeedWithUrl:(CPString)url
+- (void)subscribeFeedWithUrl:(CPString)url setCategory:(int)cid
 {
     var data = new Object;
     data.action = 'subscribe';
-    data.url = url
+    data.url = url;
+    data.cid = cid;
     [[ServerConnection alloc] postJSON:feedPath withObject:data setDelegate:self];
 }
 
-- (void)handleCreateResponse:(id)data
+- (void)handleSubscribeResponse:(id)data
 {
-
+    if (data.error)
+    {
+        if (data.error == 401)
+            [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_FEED_AUTH_REQUIRED object:nil];
+        else
+        {
+            var alert = [CPAlert alertWithError:@"Unable to subscribe this feed"];
+            [alert setInformativeText:data.message];
+            [alert runModal];
+        }
+    }
+    else
+    {
+        var feed = [[Feed alloc] initFromObject:data.feed],
+            category = [[CategoryController sharedCategoryController] getCategoryById:data.feed.category_id];
+        [category addFeed:feed];
+        [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_FEED_DIALOG_SHOULD_CLOSE object:nil];
+        [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
+    }
 }
 
 - (void)unsubscribeFeedWithId:(int)feedId
@@ -77,4 +98,11 @@ var feedPath = @"/api/feed",
     [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
 }
 
+
+- (void)findFeed:(CPString)url
+{
+    var data = new Object;
+    data.url = url;
+    [[ServerConnection alloc] get:feedPath withObject:data setDelegate:self];
+}
 @end

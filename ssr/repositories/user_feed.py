@@ -1,14 +1,14 @@
 from . import BaseManager, FeedUnreadCacheRepository
-from ssr.models import Category
+from ssr.models import UserFeed
 from flask.ext.security import current_user
 
 
 class UserFeedRepository(BaseManager):
     @staticmethod
     def create(*args):
-        uf = Category(*args)
+        uf = UserFeed(*args)
         UserFeedRepository.save(uf)
 
-        FeedUnreadCacheRepository.create(uf.id, current_user.id)
+        FeedUnreadCacheRepository.create(current_user.id, uf.id)
 
         return uf

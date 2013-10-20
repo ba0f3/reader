@@ -20,10 +20,20 @@ var _authToken = localStorage.authToken || nil;
     return _delegate;
 }
 
+- (void)get:(CPString)url setDelegate:(id)delegate
+{
+    _delegate = delegate;
+    var req = [[CPURLRequest alloc] initWithURL:url];
+    [req setHTTPMethod:@"GET"];
+    var conn = [CPURLConnection connectionWithRequest:req delegate:self];
+}
+
 - (void)post:(CPString)url setDelegate:(id)delegate
 {
     _delegate = delegate;
-    [ServerConnection load:url withObject:nil setDelegate:self];
+    var req = [[CPURLRequest alloc] initWithURL:url];
+    [req setHTTPMethod:@"POST"];
+    var conn = [CPURLConnection connectionWithRequest:req delegate:self];
 }
 
 - (void)postJSON:(CPString)url withObject:(Object)object setDelegate:(id)delegate

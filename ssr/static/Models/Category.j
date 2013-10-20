@@ -30,13 +30,18 @@
             for (var i = 0; i < obj.feeds.length; i++)
             {
                 var uf = [[Feed alloc] initFromObject:obj.feeds[i]];
-                [feeds addObject:uf];
-                var index = [feeds count] - 1;
-                [_feedMap setValue:index forKey:'id_' + [uf id]];
+                [self addFeed:uf];
             }
         }
     }
     return self;
+}
+
+- (void)addFeed:(Feed)uf
+{
+    [feeds addObject:uf];
+    var index = [feeds count] - 1;
+    [_feedMap setValue:index forKey:'id_' + [uf id]];
 }
 
 - (Feed)getFeedById:(int)_id

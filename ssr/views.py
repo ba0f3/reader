@@ -112,10 +112,11 @@ def get_headlines():
     RSSHeadlineOrderByOldestFirst = 2
     #RSSHeadlineOrderByTitle = 3
 
-    #RSSHeadlineNoFilter = 1
+    RSSHeadlineNoFilter = 1
     RSSHeadlineFilterByStared = 2
     RSSHeadlineFilterByUnread = 3
-    RSSHeadlineFilterByUnreadFirst = 4
+    RSSHeadlineFilterByArchives = 4
+    RSSHeadlineFilterByUnreadFirst = 5
 
     if current_user.is_authenticated() is False:
         return make_error(gettext('Unauthorized!'), 401, 401)

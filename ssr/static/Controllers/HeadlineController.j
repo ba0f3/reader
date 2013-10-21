@@ -14,7 +14,8 @@ RSSHeadlineOrderByTitle = 3;
 RSSHeadlineNoFilter = 1;
 RSSHeadlineFilterByStared = 2;
 RSSHeadlineFilterByUnread = 3;
-RSSHeadlineFilterByUnreadFirst = 4;
+RSSHeadlineFilterByArchives = 4;
+RSSHeadlineFilterByUnreadFirst = 5;
 
 @implementation HeadlineController : CPArrayController
 {
@@ -37,6 +38,9 @@ RSSHeadlineFilterByUnreadFirst = 4;
 
 - (id)init
 {
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onSpecialFolderSelected:) name:NOTIFICATION_SPECIAL_FOLDER_SELECTED object:nil];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onCategorySelected:) name:NOTIFICATION_CATEGORY_SELECTED object:nil];
+
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onCategorySelected:) name:NOTIFICATION_CATEGORY_SELECTED object:nil];
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onFeedSelected:) name:NOTIFICATION_FEED_SELECTED object:nil];
 
@@ -46,6 +50,22 @@ RSSHeadlineFilterByUnreadFirst = 4;
         [self reset];
     }
     return self;
+}
+
+- (void)onSpecialFolderSelected:(CPNotification)notification
+{
+    [self reset];
+    var mode = [notification object];
+
+    if (mode == 'unread')
+        [LocalSetting setObject:RSSHeadlineFilterByUnread forKey:@"filterMode"];
+    else if (mode == 'starred')
+        [LocalSetting setObject:RSSHeadlineFilterByStared forKey:@"filterMode"];
+    else if (mode == 'archives')
+        [LocalSetting setObject:RSSHeadlineFilterByArchives forKey:@"filterMode"];
+    else
+        [LocalSetting setObject:RSSHeadlineNoFilter forKey:@"filterMode"];
+    [self loadHeadlines];
 }
 
 - (void)onCategorySelected:(CPNotification)notification

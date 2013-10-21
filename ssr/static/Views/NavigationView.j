@@ -28,7 +28,7 @@ var SpecialFoldersViewHeight = 110.0;
     [defaultCenter addObserver:self selector:@selector(onCategoryLoaded:) name:NOTIFICATION_CATEGORY_LOADED object:nil];
     [defaultCenter addObserver:self selector:@selector(onUserLoggedIn:) name:NOTIFICATION_USER_LOGGED_IN object:nil];
 
-    specialFolders = [CPDictionary dictionaryWithObjects:[[@"Unread", @"Favorites", @"Archives"]] forKeys:[@"Special"]];
+    specialFolders = [CPDictionary dictionaryWithObjects:[[@"All", @"Unread", @"Starred", @"Archives"]] forKeys:[@"Special"]];
 
     self = [super initWithFrame:aFrame];
     if (self)
@@ -357,10 +357,6 @@ var SpecialFoldersViewHeight = 110.0;
     }
 
 }
-- (BOOL)outlineView:(CPOutlineView)outlineView shouldSelectTableColumn:(CPTableColumn)tableColumn;
-{
-    CPLog("NavigationView.outlineView:%@ shouldSelectTableColumn:%@", outlineView, tableColumn);
-}
 
 - (BOOL)outlineView:(CPOutlineView)outlineView shouldSelectItem:(id)item
 {
@@ -372,6 +368,9 @@ var SpecialFoldersViewHeight = 110.0;
 
         if (item == @"Special")
             return NO;
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SPECIAL_FOLDER_SELECTED object:[item lowercaseString]];
+
     }
     else
     {

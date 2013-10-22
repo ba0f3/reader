@@ -38,17 +38,29 @@
 
         [self addSubview:buttonBar];
 
-        var starButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
-        [starButton setBordered:NO];
-        [starButton setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/star.png" size:CGSizeMake(16, 16)]];
-        [starButton setImagePosition:CPImageOnly];
-        [starButton setAction:@selector(remove:)];
-        [starButton setTarget:self];
-        [starButton setEnabled:YES];
+        var toggleStarredButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
+        [toggleStarredButton setBordered:NO];
+        [toggleStarredButton setToolTip:@"Toggle Unread"];
+        [toggleStarredButton setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/StarredToolbarIcon.png" size:CGSizeMake(16, 16)]];
+        [toggleStarredButton setImagePosition:CPImageOnly];
+        [toggleStarredButton setAction:@selector(toggleStarred:)];
+        [toggleStarredButton setTarget:self];
+        [toggleStarredButton setTag:0];
+        [toggleStarredButton setEnabled:YES];
+
+        var toggleUneadButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
+        [toggleUneadButton setBordered:NO];
+        [toggleUneadButton setToolTip:@"Toggle Starred"];
+        [toggleUneadButton setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/UnreadToolbarIcon.png" size:CGSizeMake(13, 13)]];
+        [toggleUneadButton setImagePosition:CPImageOnly];
+        [toggleUneadButton setAction:@selector(toggleUnread:)];
+        [toggleUneadButton setTarget:self];
+        [toggleUneadButton setTag:0];
+        [toggleUneadButton setEnabled:YES];
 
         var shareButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
         [shareButton addItemWithTitle:nil];
-        [[shareButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/share.png" size:CGSizeMake(22, 22)]];
+        [[shareButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/share.png" size:CGSizeMake(16, 13)]];
         [shareButton setImagePosition:CPImageOnly];
         [shareButton setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset"];
         [shareButton setPullsDown:YES];
@@ -68,7 +80,7 @@
         [fullscreenButton setTarget:self];
         [fullscreenButton setEnabled:YES];
 
-        [buttonBar setButtons:[fullscreenButton, starButton, shareButton]];
+        [buttonBar setButtons:[fullscreenButton, toggleStarredButton, toggleUneadButton, shareButton]];
         [buttonBar setAutoresizingMask:CPViewWidthSizable | CPViewMinXMargin | CPViewMinYMargin];
 
     }
@@ -159,5 +171,35 @@
 - (void)toggleFullscreenMode:(id)sender
 {
     [entryView enterFullScreenMode];
+}
+
+- (void)toggleUnread:(id)sender
+{
+    if ([sender tag] == 0)
+    {
+        [sender setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/UnreadToolbarIconActive.png" size:CGSizeMake(13, 13)]];
+        [sender setTag:1];
+    }
+    else
+    {
+        [sender setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/UnreadToolbarIcon.png" size:CGSizeMake(13, 13)]];
+        [sender setTag:0];
+    }
+
+}
+
+- (void)toggleStarred:(id)sender
+{
+    if ([sender tag] == 0)
+    {
+        [sender setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/StarredToolbarIconActive.png" size:CGSizeMake(16, 16)]];
+        [sender setTag:1];
+    }
+    else
+    {
+        [sender setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/StarredToolbarIcon.png" size:CGSizeMake(16, 16)]];
+        [sender setTag:0];
+    }
+
 }
 @end

@@ -71,26 +71,34 @@ var HeadlineItemViewWidth = 200.0,
 
         var searchButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
         [searchButton setBordered:NO];
+        [searchButton setToolTip:@"Search"];
         [searchButton setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/search.png" size:CGSizeMake(16, 16)]];
         [searchButton setImagePosition:CPImageOnly];
         [searchButton setAction:@selector(remove:)];
         [searchButton setTarget:self];
-        [searchButton setEnabled:YES];
+
+        var markAsReadButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
+        [markAsReadButton setBordered:NO];
+        [markAsReadButton setToolTip:@"Mark all as read"];
+        [markAsReadButton setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/MarkAllAsReadIcon.png" size:CGSizeMake(15, 15)]];
+        [markAsReadButton setImagePosition:CPImageOnly];
+        [markAsReadButton setAction:@selector(remove:)];
+        [markAsReadButton setTarget:self];
 
         var filterButton = [[GCPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
         [filterButton setImagePosition:CPImageOnly];
-        [filterButton addItemWithTitle:@""];
-        [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/look.png" size:CGSizeMake(19, 11)]];
         [filterButton addItemWithTitle:@"All"];
+        [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/MonoAllItems.png" size:CGSizeMake(16, 16)]];
         [filterButton addItemWithTitle:@"Stared"];
+        [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/MonoStarred.png" size:CGSizeMake(16, 16)]];
         [filterButton addItemWithTitle:@"Unread"];
+        [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/MonoUnread.png" size:CGSizeMake(16, 16)]];
         [filterButton addItemWithTitle:@"Unread First"];
         [filterButton setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset"];
-        [filterButton setPullsDown:YES];
+        [filterButton setPullsDown:NO];
         [filterButton setSelectedIndex:[LocalSetting get:@"filterMode"] || RSSHeadlineFilterByUnread];
         [filterButton setTarget:self];
         [filterButton setAction:@selector(filterChanged:)];
-        [filterButton setEnabled:YES];
 
         var orderButton = [[GCPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
         [orderButton setImagePosition:CPImageOnly];
@@ -107,7 +115,7 @@ var HeadlineItemViewWidth = 200.0,
         [orderButton setEnabled:YES];
 
 
-        [buttonBar setButtons:[searchButton, filterButton, orderButton]];
+        [buttonBar setButtons:[searchButton, markAsReadButton, filterButton, orderButton]];
 
     }
     return self;

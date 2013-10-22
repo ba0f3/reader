@@ -1,12 +1,6 @@
-@import "CPFaviconView.j"
-
-var CategoryDataViewImage = 1,
-    CategoryDataViewText = 2,
-    CategoryDataViewBadge = 3;
-@implementation CategoryDataView : CPView
+@implementation SpecialDataView : CPView
 {
-    CPFaviconView _image;
-    CPImageView _folder;
+    CPImageView _image;
     CPTextField _text;
     CPTextField _badge;
     id _objectValue;
@@ -17,12 +11,9 @@ var CategoryDataViewImage = 1,
     self = [super initWithFrame:aFrame];
     if (self)
     {
-        _image = [[CPFaviconView alloc] initWithFrame:CGRectMake(0, 0, 20, 20)];
+        _image = [[CPImageView alloc] initWithFrame:CGRectMake(0, 4, 16, 16)];
+        [_image setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/MonoFolder.png" size:CGSizeMake(16, 16)]];
         [self addSubview:_image];
-
-        _folder = [[CPImageView alloc] initWithFrame:CGRectMake(0, 4, 16, 16)];
-        [_folder setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/MonoFolder.png" size:CGSizeMake(16, 16)]];
-        [self addSubview:_folder];
 
         _text = [[CPTextField alloc] initWithFrame:CGRectMake(20.0, 0.0, 130.0, 25.0)];
         [_text setVerticalAlignment:CPCenterVerticalTextAlignment];
@@ -60,34 +51,33 @@ var CategoryDataViewImage = 1,
 
 - (void)setObjectValue:(id)object
 {
-    CPLog("CategoryDataView.setObjectValue:%@", object);
     if (_objectValue === object)
         return;
-
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_ITEM_UNREAD_UPDATED object:_objectValue];
-
-    _objectValue = object;
-
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onItemUnreadUpdated:) name:NOTIFICATION_ITEM_UNREAD_UPDATED object:_objectValue];
-
-    if ([_objectValue className] == 'Feed')
+    var image;
+    if (object == @"Special")
     {
-        [_image setObjectValue:_objectValue];
-        [_folder setHidden:YES];
+        [_badge setHidden:YES];
+        image = [[CPImage alloc] initWithContentsOfFile:@"static/Resources/smart-folder.png" size:CGSizeMake(16, 16)];
+    }
+    else if (object == @"All")
+        image = [[CPImage alloc] initWithContentsOfFile:@"static/Resources/AllItems.png" size:CGSizeMake(16, 16)];
+    else if (object == @"Unread")
+        image = [[CPImage alloc] initWithContentsOfFile:@"static/Resources/MonoUnread.png" size:CGSizeMake(16, 16)];
+    else if (object == @"Starred")
+        image = [[CPImage alloc] initWithContentsOfFile:@"static/Resources/StarredToolbarIcon.png" size:CGSizeMake(16, 16)];
+    else if (object == @"Archives")
+        image = [[CPImage alloc] initWithContentsOfFile:@"static/Resources/archive.png" size:CGSizeMake(16, 16)];
+
+    if (object != @"Special")
         [_badge setFrame:CGRectMake(180.0, 0.0, 25.0, 25.0)]
-    }
-    else
-    {
-        //[_text setFrame:CGRectMake(0.0, 0.0, 160.0, 25.0)];
-        [_image setHidden:YES];
-    }
-    [self setUnread:[_objectValue unread]];
+
+    [_image setImage:image];
+    [_text setStringValue:object];
 }
 
 - (void)onItemUnreadUpdated:(CPNotification)notification
 {
-    var item = [notification object];
-    [self setUnread:[item unread]];
+    //XXX
 }
 
 - (void)showBadge

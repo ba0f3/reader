@@ -7,8 +7,9 @@
 @import "Widgets/FolderItemView.j"
 @import "Widgets/CategoryHeader.j"
 @import "Widgets/CategoryDataView.j"
+@import "Widgets/SpecialDataView.j"
 
-var SpecialFoldersViewHeight = 110.0;
+var SpecialFoldersViewHeight = 135.0;
 @implementation NavigationView : CPView
 {
     CPView _scrollDocumentView;
@@ -57,19 +58,11 @@ var SpecialFoldersViewHeight = 110.0;
         [_specialFoldersViews setOutlineTableColumn:tableColumn];
         [_specialFoldersViews setBackgroundColor:[CPColor colorWithHexString:@"E0E0E0"]]; // 333333
         [_specialFoldersViews setAutoresizingMask:CPViewWidthSizable | CPViewMinXMargin | CPViewMaxXMargin];
-
+        [_specialFoldersViews setIndentationMarkerFollowsDataView:NO];
         [_specialFoldersViews setDelegate:self];
         [_specialFoldersViews setDataSource:self];
         [_specialFoldersViews expandItem:@"Special"];
         [_scrollDocumentView addSubview:_specialFoldersViews];
-
-        var smartFolderIcon = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 16.0, 16.0)];
-        [smartFolderIcon setBordered:NO];
-        [smartFolderIcon setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/smart-folder.png" size:CGSizeMake(16, 16)]];
-        [smartFolderIcon setImagePosition:CPImageOnly];
-        [smartFolderIcon setEnabled:NO];
-
-        [_specialFoldersViews setDisclosureControlPrototype:smartFolderIcon];
 
         var categoryHeader = [[CategoryHeader alloc] initWithFrame:CGRectMake(0.0, SpecialFoldersViewHeight, CGRectGetWidth([_scrollDocumentView bounds]), 26.0)];
         [categoryHeader setAutoresizingMask:CPViewWidthSizable | CPViewMinXMargin | CPViewMaxXMargin];
@@ -126,13 +119,13 @@ var SpecialFoldersViewHeight = 110.0;
 
         var refreshButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)];
         [refreshButton setBordered:NO];
-        [refreshButton setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/refresh.png" size:CGSizeMake(16, 16)]];
+        [refreshButton setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/ReloadIcon.png" size:CGSizeMake(12, 15)]];
         [refreshButton setImagePosition:CPImageOnly];
         [refreshButton setAction:@selector(refresh:)];
         [refreshButton setTarget:self];
         [refreshButton setEnabled:YES];
 
-        [buttonBar setButtons:[addButton, editButton, removeButton, refreshButton]];
+        [buttonBar setButtons:[addButton, removeButton, editButton, refreshButton]];
 
         [defaultCenter addObserver:self selector:@selector(categoryOutlineViewFrameChanged:) name:CPViewFrameDidChangeNotification object:_categoriesViews];
        [defaultCenter addObserver:self selector:@selector(categoryOutlineViewFrameChanged:) name:CPViewBoundsDidChangeNotification object:_categoriesViews];
@@ -390,25 +383,15 @@ var SpecialFoldersViewHeight = 110.0;
     return YES;
 }
 
-- (CPIndexSet)outlineView:(id)outlineView selectionIndexesForProposedSelection:(CPIndexSet)anIndexSet
-{
-    // hack for showSelectItem does not work
-    var item = [outlineView itemAtRow:[anIndexSet firstIndex]];
-    [self outlineView:outlineView shouldSelectItem:item];
-    return anIndexSet;
-}
-
 - (CPView)outlineView:(id)outlineView viewForTableColumn:(CPTableColumn)tableColumn item:(id)item
 {
     CPLog("NavigationView.outlineView:%@ viewForTableColumn:%@ item:%@", outlineView, tableColumn, item);
+    var dataView;
     if (outlineView == _categoriesViews)
-    {
-        var dataView = [[CategoryDataView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 25.0)];
-        if ([item unread] > 0)
-            [dataView showBadge];
-        else
-            [dataView hideBadge];
-        return dataView
-    }
+        dataView = [[CategoryDataView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 25.0)];
+    else
+        dataView = [[SpecialDataView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 25.0)];
+    return dataView
+
 }
 @end

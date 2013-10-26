@@ -14,6 +14,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = ssr.configs.SECRET_KEY
 app.config['DEBUG'] = ssr.configs.DEBUG
 app.config['SQLALCHEMY_DATABASE_URI'] = ssr.configs.DATABASE_URI
+app.config['SQLALCHEMY_ECHO'] = True
+app.config['SQLALCHEMY_RECORD_QUERIES'] = True
 app.config['SECURITY_FLASH_MESSAGES'] = False
 app.config['SECURITY_PASSWORD_HASH'] = 'sha256_crypt'
 app.config['SECURITY_PASSWORD_SALT'] = ssr.configs.PASSWORD_SALT
@@ -48,6 +50,7 @@ def get_timezone():
 from ssr.cron import scheduler
 import ssr.commands
 import ssr.views
+import ssr.rest
 from ssr.models import User, Role
 
 
@@ -58,12 +61,7 @@ manager = ssr.commands.manager
 security = Security(app, SQLAlchemyUserDatastore(db, User, Role))
 
 # Setup Flask-Migrate
-migrate = Migrate(app, db)
-
-# Create the Flask-Restless API manager.
-#api_manager = APIManager(app, flask_sqlalchemy_db=db)
-#api_manager.create_api(Category, methods=['GET', 'POST', 'DELETE'])
-#api_manager.create_api(UserEntry, methods=['GET'])
+Migrate(app, db)
 
 
 if __name__ == '__main__':

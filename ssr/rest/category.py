@@ -1,0 +1,152 @@
+from flask import jsonify, make_response, request
+from flask.views import MethodView
+from flask.ext.security import current_user
+from ssr import app, db
+from ssr.models import Category
+
+
+class CategoryAPI(MethodView):
+    def get(self, id):
+        if not current_user.is_authenticated():
+            return make_response(jsonify(error='Unauthorized'), 401)
+
+        if id:
+            category = Category.query.get(id)
+
+            if not category:
+                return make_response(jsonify(error='Not Found'), 404)
+
+            if category.user_id != current_user.id:
+                return make_response(jsonify(error='Access Denied'), 403)
+
+            return jsonify(self._make_output(category))
+
+        category_list = list()
+        feed_dict = dict()
+
+        sql = "SELECT f.id, uf.category_id, uf.name, uf.order_id, f.site_url, fuc.value AS unread \
+        FROM user_feed AS uf \
+        INNER JOIN feed AS f ON f.id = uf.feed_id \
+        INNER JOIN feed_unread_cache AS fuc ON uf.id = fuc.user_feed_id"
+
+        rows = db.engine.execute(sql)
+        for row in rows:
+            if row.category_id not in feed_dict:
+                feed_dict[row.category_id] = list()
+
+            feed_dict[row.category_id].append({
+                'id': row.id,
+                'name': row.name,
+                'order_id': row.order_id,
+                'site': row.site_url,
+                'unread': row.unread})
+
+
+        sql = "SELECT c.id, c.name, c.order_id, c.parent_id, cuc.value AS unread \
+        FROM category AS c \
+        INNER JOIN category_unread_cache AS cuc ON c.id = cuc.category_id \
+        WHERE c.user_id=%s \
+        ORDER BY c.name, c.order_id"
+
+        rows = db.engine.execute(sql, current_user.id)
+        for row in rows:
+            category_list.append({
+                'id': row.id,
+                'name': row.name,
+                'order_id': row.order_id,
+                'parent_id': row.parent_id,
+                'unread': row.unread,
+                'feeds': feed_dict[row.id] if row.id in feed_dict else []
+            })
+        return jsonify(objects=category_list)
+
+    def post(self):
+        if not current_user.is_authenticated():
+            return make_response(jsonify(error='Unauthorized'), 401)
+
+        name = request.json['name'] if 'name' in request.json else None
+
+        if not name:
+            return make_response(jsonify(error='Unauthorized'), 500)
+
+        try:
+            category = Category(current_user.id, name)
+            db.session.add(category)
+            db.session.commit()
+            return jsonify(self._make_output(category))
+        except:
+            return make_response(jsonify(error='Error! please try again later.'), 500)
+
+    def put(self, id):
+        if not current_user.is_authenticated():
+            return make_response(jsonify(error='Unauthorized'), 401)
+
+        category = Category.query.get(id)
+
+        if not category:
+            return make_response(jsonify(error='Not Found'), 404)
+
+        if category.user_id != current_user.id:
+            return make_response(jsonify(error='Access Denied'), 403)
+
+        for attr in request.json:
+            if attr == 'id':
+                continue
+            if attr in category:
+                category[attr] = request.json[attr]
+
+        db.session.add(category)
+        db.session.commit()
+
+        return make_response("", 204)
+
+    def delete(self, id):
+        if not current_user.is_authenticated():
+            return make_response(jsonify(error='Unauthorized'), 401)
+
+        try:
+            category = Category.query.get(id)
+
+            if not category:
+                return make_response(jsonify(error='Not Found'), 404)
+
+            if category.user_id != current_user.id:
+                return make_response(jsonify(error='Access Denied'), 403)
+
+            if category.user_feeds:
+                return make_response(jsonify(error='Please unsubscribe feeds belong category %s first.' % category.name), 500)
+
+            db.session.delete(category)
+            db.session.commit()
+
+            return jsonify(delete=True, id=id)
+        except:
+            return make_response(jsonify(error='Error! please try again later.'), 500)
+
+    def _make_output(self, category):
+        """
+        category: Category
+        """
+        obj = dict()
+        obj['id'] = category.id
+        obj['name'] = category.name
+        obj['order_id'] = category.order_id
+
+        if category.user_feeds:
+            obj['feeds'] = list()
+
+            for feed in category.user_feeds:
+
+                obj['feeds'].append({
+                    'id': feed.id,
+                    'name': feed.name,
+                    'order_id': feed.order_id
+                })
+
+        return obj
+
+_view = CategoryAPI.as_view('category_api')
+
+app.add_url_rule('/api/category/', defaults={'id': None}, view_func=_view, methods=['GET'])
+app.add_url_rule('/api/category/', view_func=_view, methods=['POST'])
+app.add_url_rule('/api/category/<int:id>', view_func=_view, methods=['GET', 'PUT', 'DELETE'])

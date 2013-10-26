@@ -1,6 +1,4 @@
 flask-themes
-flask-lesscss
-flask-restless
 flask-migrate
 flask-babel
 flask-security

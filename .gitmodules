@@ -1,3 +1,6 @@
 [submodule "ssr/static/Frameworks/GCKit"]
 	path = ssr/static/Frameworks/GCKit
 	url = git@github.com:rgv151/GCKit.git
+[submodule "ssr/static/Frameworks/Ratatosk"]
+	path = ssr/static/Frameworks/Ratatosk
+	url = git@github.com:rgv151/Ratatosk.git

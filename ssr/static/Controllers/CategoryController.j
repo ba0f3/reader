@@ -33,10 +33,23 @@ var resourcePath = @"/api/category",
     [WLRemoteAction schedule:WLRemoteActionGetType path:resourcePath delegate:self message:"Loading categories"];
 }
 
+- (void)createCategoryWithName:(CPString)name
+{
+    var category = [[Category alloc] init];
+    [category setName:name];
+    [category create];
+
+    [categories addObject:category];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
+
+}
+
 - (void)deleteCategory:(id)category
 {
     [categories removeObject:category];
-    [category ensureDeleted];
+    [category delete];
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
 }
 
 - (void)remoteActionDidFinish:(WLRemoteAction)anAction

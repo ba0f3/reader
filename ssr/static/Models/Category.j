@@ -37,7 +37,12 @@
 {
     if (self = [super init])
     {
-        feeds = [];
+        name = @"";
+        order = 0;
+        parent = -1;
+        unread = 0;
+        feeds = [CPArray array];
+
     }
     return self;
 }

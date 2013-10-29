@@ -32,6 +32,8 @@ var LogoToolbarItemIdentifier = "LogoToolbarItemIdentifier",
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onUserLoggedIn:) name:NOTIFICATION_USER_LOGGED_IN object:nil];
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(onUserLoggedOut:) name:NOTIFICATION_USER_LOGGED_OUT object:nil];
 
+    [[WLRemoteLink sharedRemoteLink] setSaveActionType:WLRemoteActionPutType];
+
     [[LoginController sharedLoginController] openSession];
 
     User = nil;

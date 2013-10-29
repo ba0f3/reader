@@ -102,7 +102,8 @@ var sharedCategoryDialogInstace;
         {
             if ([nameField stringValue] != '' && [nameField stringValue] != [_category name])
             {
-                [[CategoryController sharedCategoryController] updateCategory:_category withNewName:[nameField stringValue]];
+                [_category setName:[nameField stringValue]];
+                [_category ensureSaved];
             }
         }
     }

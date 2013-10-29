@@ -119,7 +119,7 @@ class CategoryAPI(MethodView):
             db.session.delete(category)
             db.session.commit()
 
-            return jsonify(delete=True, id=id)
+            return make_response("", 204)
         except:
             return make_response(jsonify(error='Error! please try again later.'), 500)
 

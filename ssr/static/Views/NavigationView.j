@@ -163,7 +163,7 @@ var SpecialFoldersViewHeight = 135.0;
     if ([_selectedItem className] == 'Category')
     {
         if ([[_selectedItem feeds] count] == 0)
-            [[CategoryController sharedCategoryController] deleteCategoryWithId:_selectedItem.id];
+            [[CategoryController sharedCategoryController] deleteCategory:_selectedItem];
         else
         {
             message = "Can not remove this category!";
@@ -184,8 +184,7 @@ var SpecialFoldersViewHeight = 135.0;
 
 - (void)refresh:(id)sender
 {
-    [[CategoryController sharedCategoryController] clearData];
-    [[CategoryController sharedCategoryController] loadCategories];
+    [[CategoryController sharedCategoryController] fetchCategories];
 }
 
 - (void)didEndSheetRemoveItem:(CPWindow)aSheet returnCode:(int)returnCode contextInfo:(id)contextInfo
@@ -217,7 +216,7 @@ var SpecialFoldersViewHeight = 135.0;
 - (void)onUserLoggedIn:(CPNotification)notification
 {
     CPLog('NavigationView.onUserLoggedIn:%@', notification);
-    [[CategoryController sharedCategoryController] loadCategories];
+    [[CategoryController sharedCategoryController] fetchCategories];
 }
 
 - (void)categoryOutlineViewFrameChanged:(CPNotification)notification

@@ -1,6 +1,6 @@
 @import "../Constants.j"
 
-@implementation Feed : CPObject
+@implementation Feed : WLRemoteObject
 {
     int id @accessors;
     CPString name @accessors;
@@ -9,28 +9,28 @@
     int unread @accessors;
 }
 
-- (id)initFromObject:(Object)obj
++ (CPArray)remoteProperties
 {
-    if (self  = [super init])
+    return [
+        ['pk', 'id'],
+        ['name'],
+        ['site'],
+        ['order'],
+        ['unread']
+    ];
+}
+
+
+- (id)init
+{
+    if (self = [super init])
     {
-        [self setId:obj.id];
-        [self setName:obj.name];
-        [self setSite:obj.site];
-        [self setOrder:obj.order_id];
-        [self setUnread:obj.unread];
     }
-    return self
+    return self;
 }
 
-- (void)decreaseUnread
+- (CPString)description
 {
-    [self decreaseUnreadByValue:1];
+    return [self UID] + " " + [self pk] + " " + [self name];
 }
-
-- (void)decreaseUnreadByValue:(int)value
-{
-    unread-= value;
-    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ITEM_UNREAD_UPDATED object:self];
-}
-
 @end

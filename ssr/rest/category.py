@@ -92,8 +92,8 @@ class CategoryAPI(MethodView):
         for attr in request.json:
             if attr == 'id':
                 continue
-            if attr in category:
-                category[attr] = request.json[attr]
+            if attr in category.__dict__:
+                setattr(category, attr, request.json[attr])
 
         db.session.add(category)
         db.session.commit()

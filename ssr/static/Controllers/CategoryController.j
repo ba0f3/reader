@@ -45,6 +45,14 @@ var resourcePath = @"/api/category",
 
 }
 
+- (void)updateCategory:(id)category withNewName:(CPString)name
+{
+    [category setName:name];
+    [category ensureSaved];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_LOADED object:nil];
+}
+
 - (void)deleteCategory:(id)category
 {
     [categories removeObject:category];

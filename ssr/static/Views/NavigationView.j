@@ -368,14 +368,14 @@ var SpecialFoldersViewHeight = 135.0;
     {
         [removeButton setEnabled:YES];
         [editButton setEnabled:YES];
-        if ([item className] == 'Category')
+        if ([item isKindOfClass:Category])
         {
-            [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_SELECTED object:item.id];
+            [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_CATEGORY_SELECTED object:item];
 
         }
-        else if ([item className] == 'Feed')
+        else if ([item isKindOfClass:Feed])
         {
-            [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_FEED_SELECTED object:item.id];
+            [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_FEED_SELECTED object:item];
         }
         _selectedItem = item;
     }

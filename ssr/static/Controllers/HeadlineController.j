@@ -4,18 +4,16 @@
 @import "../Models/Headline.j"
 
 
-var path = @"/api/headlines",
+var resourcePath = @"/api/headline/",
     headlineControllerSharedInstance;
 
 RSSHeadlineOrderByNewestFirst = 1;
 RSSHeadlineOrderByOldestFirst = 2;
-RSSHeadlineOrderByTitle = 3;
 
-RSSHeadlineNoFilter = 1;
-RSSHeadlineFilterByStared = 2;
-RSSHeadlineFilterByUnread = 3;
-RSSHeadlineFilterByArchives = 4;
-RSSHeadlineFilterByUnreadFirst = 5;
+RSSHeadlineNoFilter = 0;
+RSSHeadlineFilterByStared = 1;
+RSSHeadlineFilterByUnread = 2;
+RSSHeadlineFilterByArchives = 3;
 
 @implementation HeadlineController : CPArrayController
 {
@@ -65,48 +63,71 @@ RSSHeadlineFilterByUnreadFirst = 5;
         [LocalSetting setObject:RSSHeadlineFilterByArchives forKey:@"filterMode"];
     else
         [LocalSetting setObject:RSSHeadlineNoFilter forKey:@"filterMode"];
-    [self loadHeadlines];
+    [self fetchHeadlines];
 }
 
 - (void)onCategorySelected:(CPNotification)notification
 {
     CPLog('HeadlineController.onCategorySelected:%@', notification);
     [self reset];
-    selectedCategory = [notification object];
-    [self loadHeadlines];
+    selectedCategory = [[notification object] pk];
+    [self fetchHeadlines];
 }
 
 - (void)onFeedSelected:(CPNotification)notification
 {
     CPLog('HeadlineController.onFeedSelected:%@', notification);
     [self reset];
-    selectedFeed = [notification object];
-    [self loadHeadlines];
+    selectedFeed = [[notification object] pk];
+    [self fetchHeadlines];
 }
 
 - (void)reset
 {
     [self setContent:[CPArray array]];
-    selectedCategory = 0;
-    selectedFeed = 0;
-    lastTimestamp = 0;
+    selectedCategory = -1;
+    selectedFeed = -1;
+    lastTimestamp = -1;
     isPrefetching = NO;
     noMoreResult = NO;
 
 }
 
-- (void)loadHeadlines
+- (void)fetchHeadlines
 {
-    if (noMoreResult)
-        return; // end of table, no more to load
-    var data = new Object;
-    data.orderMode = [LocalSetting get:@"orderMode"] || RSSHeadlineOrderByNewestFirst;
-    data.filterMode = [LocalSetting get:@"filterMode"] || RSSHeadlineFilterByUnread;
-    data.lastTimestamp = lastTimestamp;
-    data.feed = selectedFeed;
-    data.category = selectedCategory;
 
-    [[ServerConnection alloc] postJSON:path withObject:data setDelegate:self];
+    var querystring = new Array;
+    querystring.push('orderMode=' + [LocalSetting get:@"orderMode"] || RSSHeadlineOrderByNewestFirst);
+    querystring.push('filterMode=' + [LocalSetting get:@"filterMode"] || RSSHeadlineFilterByUnread);
+    if (lastTimestamp > 0)
+        querystring.push('lastTimestamp=' + lastTimestamp);
+    if (selectedFeed > 0)
+        querystring.push('feed=' + selectedFeed);
+    if (selectedCategory > 0)
+        querystring.push('category=' + selectedCategory);
+
+    var path = resourcePath + '?' + querystring.join('&');
+
+    [WLRemoteAction schedule:WLRemoteActionGetType path:path delegate:self message:"Loading headlines"];
+}
+
+- (void)remoteActionDidFinish:(WLRemoteAction)anAction
+{
+    var headlines = [Headline objectsFromJson:[anAction result].objects];
+
+    // last response return less then 20 article => no more article to load
+    if ([headlines count] < 20)
+        noMoreResult = YES;
+
+    lastTimestamp = [[[headlines lastObject] created] timeIntervalSince1970];
+
+    [self addObjects:headlines]
+    var headlines = [CPMutableArray array];
+
+    if (isPrefetching)
+        isPrefetching = NO; // release lock
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_LOADED object:nil];
 }
 
 - (int)count
@@ -129,35 +150,8 @@ RSSHeadlineFilterByUnreadFirst = 5;
     if (rowIndex + 3 >= [self count])
     {
         isPrefetching = YES;
-        [self loadHeadlines];
+        [self fetchHeadlines];
     }
-}
-
-- (void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
-{
-    CPLog('HeadlineController.connection:%@ didReceiveData:%@', connection, '[HIDDEN]');
-
-    var headlines = [CPMutableArray array];
-
-    data = JSON.parse(data);
-
-    // last response return less then 20 article => no more article to load
-    if (data.count < 20)
-        noMoreResult = YES;
-
-    var headline;
-    for (var i = 0; i < data.count; i++)
-    {
-        headline = [[Headline alloc] initFromObject:data.objects[i]];
-        [self addObject:headline];
-    }
-    lastTimestamp = [[headline created] timeIntervalSince1970];
-    delete headline;
-
-    if (isPrefetching)
-        isPrefetching = NO; // release lock
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_HEADLINE_LOADED object:nil];
 }
 
 - (void)applyFilters
@@ -167,7 +161,7 @@ RSSHeadlineFilterByUnreadFirst = 5;
     noMoreResult = NO;
     [self setContent:[CPArray array]];
 
-    [self loadHeadlines];
+    [self fetchHeadlines];
 
 }
 @end

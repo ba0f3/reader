@@ -93,7 +93,6 @@ var HeadlineItemViewWidth = 200.0,
         [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/MonoStarred.png" size:CGSizeMake(16, 16)]];
         [filterButton addItemWithTitle:@"Unread"];
         [[filterButton lastItem] setImage:[[CPImage alloc] initWithContentsOfFile:@"static/Resources/MonoUnread.png" size:CGSizeMake(16, 16)]];
-        [filterButton addItemWithTitle:@"Unread First"];
         [filterButton setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset"];
         [filterButton setPullsDown:NO];
         [filterButton setSelectedIndex:[LocalSetting get:@"filterMode"] || RSSHeadlineFilterByUnread];
@@ -145,7 +144,7 @@ var HeadlineItemViewWidth = 200.0,
 - (void)onUserLoggedIn:(CPNotification)notification
 {
     CPLog('HeadlineView.onUserLoggedIn:%@', notification);
-    [[HeadlineController sharedHeadlineController] loadHeadlines];
+    [[HeadlineController sharedHeadlineController] fetchHeadlines];
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)aTableView

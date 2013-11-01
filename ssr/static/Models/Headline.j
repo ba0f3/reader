@@ -51,7 +51,7 @@
     return self;
 }
 
-- (id)initWithJson:(is)obj
+- (id)initWithJson:(id)obj
 {
     if (self  = [super init])
     {

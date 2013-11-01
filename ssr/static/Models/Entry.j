@@ -1,6 +1,6 @@
 @import <Foundation/CPObject.j>
 
-@implementation Entry : CPObject
+@implementation Entry : WLRemoteObject
 {
     int id @accessors;
     CPString title @accessors;
@@ -16,9 +16,67 @@
     int category @accessors;
     int feed @accessors;
 }
-- (id)initFromObject:(Object)obj
-{
 
++ (CPArray)remoteProperties
+{
+    return [
+        ['pk', 'id'],
+        ['title'],
+        ['link'],
+        ['site'],
+        ['content'],
+        ['published'],
+        ['author'],
+        ['comments'],
+        ['unread'],
+        ['stared'],
+        ['category'],
+        ['feed']
+    ];
+}
+
+- (CPString)remotePath
+{
+    var path = @"/api/entry/";
+
+    if ([self pk])
+        path += [self pk];
+
+    return path
+}
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        title = @"";
+        link = @"";
+        site = @"";
+        content =@"";
+        published = nil;
+        author = @"";
+        comments = @"";
+        unread = 1;
+        stared = 0;
+        category = -1;
+        feed = -1;
+
+    }
+    return self;
+}
+
+- (CPString)description
+{
+    return [self UID] + " " + [self pk] + " " + [self name];
+}
+
++ (BOOL)automaticallyLoadsRemoteObjectsForUser
+{
+    return YES;
+}
+
+- (id)initWithJson:(id)obj
+{
     if (self  = [super init])
     {
         [self setId:obj.id];

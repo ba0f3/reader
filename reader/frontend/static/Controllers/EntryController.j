@@ -3,8 +3,7 @@
 @import "../ServerConnection.j"
 @import "../Models/Entry.j"
 
-var path = @"/api/entry/%s",
-    markerPath = @"/api/markers",
+var resourcePath = @"/api/entry/",
     entryControllerSharedInstance;
 @implementation EntryController : CPObject
 {
@@ -43,9 +42,10 @@ var path = @"/api/entry/%s",
 
 - (void)loadEntry:(int)entryId forceReload:(BOOL)forceReload
 {
+    var path = resourcePath + '/' + entryId;
     if (forceReload)
     {
-        [[ServerConnection alloc] postJSON:[CPString stringWithFormat:path,entryId] withObject:nil setDelegate:self];
+        [WLRemoteAction schedule:WLRemoteActionGetType path:path delegate:self message:"Loading headlines"];
     }
     else
     {
@@ -55,28 +55,22 @@ var path = @"/api/entry/%s",
         }
         else
         {
-            [[ServerConnection alloc] postJSON:[CPString stringWithFormat:path,entryId] withObject:nil setDelegate:self];
+            [WLRemoteAction schedule:WLRemoteActionGetType path:path delegate:self message:"Loading headlines"];
         }
     }
 }
 
-- (void)markAsRead:(int)entryId
+- (void)remoteActionDidFinish:(WLRemoteAction)anAction
 {
-    var data = new Object;
-    data.action = 'markAsRead';
-    data.type = 'entry';
-    data.id = entryId;
-    [[ServerConnection alloc] postJSON:[CPString stringWithFormat:markerPath] withObject:data setDelegate:nil];
-}
-
-- (void)connection:(CPURLConnection)connection didReceiveData:(CPString)data
-{
-    CPLog('connection:%@ didReceiveData:%@', connection, data);
-    data = JSON.parse(data);
-    var entry = [[Entry alloc] initFromObject:data.objects];
+    var entry = [[Entry alloc] initWithJson:[anAction result]];
 
     [_entryCache setObject:entry forKey:entry.id];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_ENTRY_LOADED object:entry.id];
 }
+
+- (void)markAsRead:(int)entryId
+{
+}
+
 @end

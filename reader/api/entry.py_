@@ -37,7 +37,7 @@ class EntryAPI(MethodView):
                     'feed_id': row.feed_id,
                     'category_id': row.category_id
                 }
-                return jsonify(objects=entry)
+                return jsonify( entry)
             return make_response(jsonify(error='Not Found'), 404)
 
     def put(self):

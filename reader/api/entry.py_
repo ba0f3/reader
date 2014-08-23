@@ -1,0 +1,69 @@
+from flask import jsonify, make_response, request
+from flask.views import MethodView
+from flask.ext.security import current_user
+from reader import app, db
+import calendar
+from reader.models import UserEntry
+
+
+class EntryAPI(MethodView):
+    def get(self, id):
+        if id:
+            sql = """SELECT
+                    ue.id, e.title, e.link, f.site_url, e.content, uf.feed_id, uf.category_id,
+                    e.published, e.author, e.comments, ue.unread, ue.stared, ue.note
+                FROM user_entry AS ue
+                INNER JOIN entry AS e ON e.id = ue.entry_id
+                INNER JOIN feed AS f ON f.id = e.feed_id
+                INNER JOIN user_feed AS uf ON f.id = uf.feed_id
+                WHERE ue.user_id = %s
+                AND ue.id = %s
+                LIMIT 1""" % (current_user.id, id)
+            rows = db.engine.execute(sql)
+            #FIXME: how to get single result???
+            for row in rows:
+                entry = {
+                    'id': row.id,
+                    'title': row.title,
+                    'site': row.site_url,
+                    'link': row.link,
+                    'content': row.content,
+                    'published': calendar.timegm(row.published.utctimetuple()),
+                    'author': row.author,
+                    'comments': row.comments,
+                    'unread': row.unread,
+                    'stared': row.stared,
+                    'note': row.note,
+                    'feed_id': row.feed_id,
+                    'category_id': row.category_id
+                }
+                return jsonify(objects=entry)
+            return make_response(jsonify(error='Not Found'), 404)
+
+    def put(self):
+        if not current_user.is_authenticated():
+            return make_response(jsonify(error='Unauthorized'), 401)
+
+        ue = UserEntry.query.get(id)
+
+        if not ue:
+            return make_response(jsonify(error='Not Found'), 404)
+
+        if ue.user_id != current_user.id:
+            return make_response(jsonify(error='Access Denied'), 403)
+
+        for attr in request.json:
+            if attr == 'id':
+                continue
+            if attr in ue:
+                ue[attr] = request.json[attr]
+
+        db.session.add(ue)
+        db.session.commit()
+
+        return make_response("", 204)
+
+_view = EntryAPI.as_view('entry_api')
+
+app.add_url_rule('/api/entry/', defaults={'id': None}, view_func=_view, methods=['GET'])
+app.add_url_rule('/api/entry/<int:id>', view_func=_view, methods=['GET', 'PUT'])

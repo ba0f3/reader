@@ -1,6 +1,4 @@
-flask-themes
-flask-migrate
-flask-babel
+flask-rethinkdb
 flask-security
 feedparser
 apscheduler
@@ -8,3 +6,6 @@ listparser
 beautifulsoup4
 opml
 requests
+git+git://github.com/rgv151/rwrapper.git
+validate_email
+xxhash

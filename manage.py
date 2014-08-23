@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from ssr import manager
+from reader import manager
 
 
 if __name__ == '__main__':
